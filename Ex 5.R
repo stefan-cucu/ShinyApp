@@ -1,11 +1,11 @@
 library(shiny)
 library(DT)
 shinyApp(
-  ui = fluidPage(DTOutput('tbl'),sliderInput(inputId = "bins",
+  ui = fluidPage(sliderInput(inputId = "bins",
                                              label = "Number of bins:",
                                              min = 0,
                                              max = 99,
-                                             value = 0)),
+                                             value = 0),DTOutput('tbl')),
   server = function(input, output) {
     X <- RV(0:100, 1/3)
     Outcomes = outcomes(X)
