@@ -1,8 +1,8 @@
 library(shiny)
 library(DT)
 shinyApp(
-  ui = fluidPage(sliderInput(inputId = "bins",
-                                             label = "Number of bins:",
+  ui = fluidPage(sliderInput(inputId = "begin",
+                                             label = "Where to display from:",
                                              min = 0,
                                              max = 99,
                                              value = 0),DTOutput('tbl')),
@@ -11,7 +11,7 @@ shinyApp(
     Outcomes = outcomes(X)
     Probabilities =probs(X)
     df <-data.frame(Outcomes,Probabilities)
-    observeEvent(input$bins,{df <- tail(df,100-input$bins)
+    observeEvent(input$begin,{df <- tail(df,100-input$begin)
     output$tbl = renderDT(
       df, options = list(pageLength=10)
     )
