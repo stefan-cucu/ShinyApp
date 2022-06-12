@@ -36,14 +36,21 @@ server <- function(input, output) {
           numericInput(paste("prob", val),"", 0, min = 0) )
     })
     
-    tags$div(
-      tags$div(
-        div(style="display: inline-block; width: 100px;","Valori:"),
-        tagList(vals)),
-      tags$div(
-        div(style="display: inline-block; width: 100px;","Probabilitati:"),
-        tagList(pr)))
+   test <- lapply(1:input$nrVal2, function(val){
+     tags$div(
+       div(style="display: inline-block; width: 100px; margin-bottom:0; margin-top:0;"),
+       tagList(vals)
+     )
+   })
+   
+   print(test)
     
+    tags$div(
+      div(style="margin:0;"),
+      tags$div(
+        tagList(test)
+      )
+    )
   })
   
   output$fctmasa2 <- renderPlot({

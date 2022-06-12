@@ -1,13 +1,15 @@
 library(shiny)
 library(shinydashboard)
 library(discreteRV)
+library(rlist)
 
 # Define UI for application
 ui <- dashboardPage(
-  dashboardHeader(),
+  dashboardHeader(uiOutput("va_select")),
   dashboardSidebar(
     sidebarMenu(
       menuItem("Ex. 1 - Galerie", tabName="ex1", icon = icon('th')),
+      menuItem("Ex. 2", tabName="ex2", icon = icon('th')),
       menuItem("Ex. 5", tabName="ex5"),
       menuItem("Ex. 6", tabName="ex6"),
       menuItem("Ex. 7", tabName="ex7"),
@@ -104,6 +106,28 @@ ui <- dashboardPage(
             plotOutput("ex_1_norm_plot2", height = "290px"),
             "Media",
             "Dispersia"
+          ),
+          uiOutput("ex2discrete")
+        )
+      ),
+      tabItem(
+        tabName = "ex2",
+        fluidPage(
+          titlePanel("Ex. 2"),
+          fluidRow(
+            column(4,
+                   numericInput("nrVal2", "Introduceti numarul valorilor", 1, min = 1),
+                   uiOutput("table2"),
+                   actionButton("do2", "Introducere"),
+                   verbatimTextOutput("proprietati2")),
+            
+            column(4,
+                   h3("Functia de masa"),
+                   plotOutput("fctmasa2")
+            ),
+            column(4,
+                   h3("Functia de repartitie"),
+                   plotOutput("fctrepart2"))
           )
         )
       ),
@@ -116,6 +140,25 @@ ui <- dashboardPage(
 )
 
 server <- function(input, output) {
+  
+    output$va_select <- renderUI({
+      predef <- c("Bernoulli"="bern",
+                  "Binomiala"="binom",
+                  "Geometrica"="geom",
+                  "Hipergeometrica"="hgeom",
+                  "Poisson"="pois",
+                  "Uniforma"="unif",
+                  "Exponentiala"="exp",
+                  "Normala"="norm")
+      custom <- sapply(1:ex2_rvs$cnt, function(a){
+        return(sprintf("c%d", a))
+      })
+      names(custom) = sapply(1:ex2_rvs$cnt, function(a){
+        return(sprintf("Custom %d", a))
+      })
+      predef <- c(predef, custom)
+      selectInput("va_selected", label="VA", predef)
+    })
   
     #########
     # Ex. 1 #
@@ -253,6 +296,137 @@ server <- function(input, output) {
       
       x <- seq(n-d/2, n+d/2, 0.1)
       plot(x, pnorm(x,n,d), type='l')
+    })
+    
+    
+    output$ex2discrete <- renderUI({
+      if(ex2_rvs$cnt == 0)
+        return()
+      
+      lapply(1:ex2_rvs$cnt, function(a) {
+        output[[sprintf("ex_1_#%d_plot1", a)]] <- renderPlot({
+          plot(ex2_rvs$arr[[a]])
+        })
+        output[[sprintf("ex_1_#%d_plot2", a)]] <- renderPlot({
+          X <- ex2_rvs$arr[[a]]
+          domeniu <- seq(min(X)-1, max(X)+1, 0.01)
+          codomeniu <- sapply(domeniu, function(nr) {
+            return(P(X<=nr))
+          })
+          plot(domeniu, codomeniu, pch=19, type='l')
+        })
+        box(
+          title=sprintf("V.A. Discreta #%d", a), status="primary", solidHeader=TRUE, collapsible=TRUE,
+          "Functia de densitate",
+          plotOutput(sprintf("ex_1_#%d_plot1", a), height = "290px"),
+          "Functia de repartitie",
+          plotOutput(sprintf("ex_1_#%d_plot2", a), height = "290px"),
+          "Media",
+          "Dispersia"
+        )
+      })
+    })
+    
+    #########
+    # Ex. 2 #
+    #########
+    
+    ex2_rvs <- reactiveValues(arr = list(), cnt = 0) 
+    
+    output$table2 <- renderUI({
+      
+      vals <- lapply(1:input$nrVal2, function(val){
+        div(style="display: inline-block; width: 60px;", 
+            numericInput(paste("value", val),"",0, min = 0) )
+      })
+      
+      pr <- lapply(1:input$nrVal2, function(val){
+        div(style="display: inline-block; width: 60px;", 
+            numericInput(paste("prob", val),"", 0, min = 0) )
+      })
+      
+      tags$div(
+        tags$div(
+          div(style="display: inline-block; width: 100px;","Valori:"),
+          tagList(vals)),
+        tags$div(
+          div(style="display: inline-block; width: 100px;","Probabilitati:"),
+          tagList(pr)))
+      
+    })
+    
+    output$fctmasa2 <- renderPlot({
+      
+      if (input$do2 == 0)
+        return()
+      
+      values <- sapply(1:input$nrVal2, function(val){
+        return(input[[paste("value", val)]])
+      })
+      
+      probs <- sapply(1:input$nrVal2, function(val){
+        return(input[[paste("prob", val)]])
+      })
+      
+      X <- RV(values, probs)
+      plot(X, col="pink")
+    })
+    
+    output$fctrepart2 <- renderPlot({
+      
+      if (input$do2 == 0)
+        return()
+      
+      values <- sapply(1:input$nrVal2, function(val){
+        return(input[[paste("value", val)]])
+      })
+      
+      probs <- sapply(1:input$nrVal2, function(val){
+        return(input[[paste("prob", val)]])
+      })
+      
+      X <- RV(values, probs)
+      domeniu <- seq(min(values)-1, max(values)+1, 0.01)
+      codomeniu <- sapply(domeniu, function(nr) {
+        return(P(X<=nr))
+      })
+      plot(domeniu, codomeniu, pch=19, col="pink")
+    })
+    
+    output$proprietati2 <- renderText({
+      if (input$do2 == 0)
+        return()
+      
+      values <- sapply(1:input$nrVal2, function(val){
+        return(input[[paste("value", val)]])
+      })
+      
+      probs <- sapply(1:input$nrVal2, function(val){
+        return(input[[paste("prob", val)]])
+      })
+      
+      X <- RV(values,probs)
+      
+      EX <- E(X)
+      VAR <- V(X)
+      
+      paste("Media repartitiei este:", EX,
+            "\nVarianta repartitiei este:", VAR)
+    })
+    
+    
+    observeEvent(input$do2, {
+      values <- sapply(1:input$nrVal2, function(val){
+        return(input[[paste("value", val)]])
+      })
+      
+      probs <- sapply(1:input$nrVal2, function(val){
+        return(input[[paste("prob", val)]])
+      })
+      X <- RV(values,probs)
+      
+      ex2_rvs$cnt <- ex2_rvs$cnt + 1
+      ex2_rvs$arr[[ex2_rvs$cnt]] <-  X
     })
 }
 
