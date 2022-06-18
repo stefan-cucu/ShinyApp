@@ -9,7 +9,7 @@ shinyApp(
   server = function(input, output) {
     X <- RV(0:100, 1/3)
     Outcomes = outcomes(X)
-    Probabilities =probs(X)
+    Probabilities = probs(X)
     df <-data.frame(Outcomes,Probabilities)
     observeEvent(input$begin,{df <- tail(df,100-input$begin)
     output$tbl = renderDT(
