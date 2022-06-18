@@ -176,6 +176,21 @@ ui <- dashboardPage(
         )
       ),
       tabItem(
+        tabName = "ex6",
+        fluidPage(
+          sidebarLayout(
+            sidebarPanel(
+              titlePanel("Ex. 6"),
+              textInput("ex_6_in", "Probabilitatea cautata: "),
+              actionButton("ex_6_btn", "Calculeaza")
+            ),
+            mainPanel(
+              textOutput("ex_6_out")
+            )
+          )
+        )
+      ),
+      tabItem(
         tabName = "ex7",
         fluidPage(
           titlePanel("Ex. 7"),
@@ -570,31 +585,6 @@ server <- function(input, output, session) {
       
       ex2_rvs$cnt <- ex2_rvs$cnt + 1
       ex2_rvs$arr[[ex2_rvs$cnt]] <-  X
-      
-      # output$va_select <- renderUI({
-      #   predef <- c("Bernoulli"="bern",
-      #               "Binomiala"="binom",
-      #               "Geometrica"="geom",
-      #               "Hipergeometrica"="hgeom",
-      #               "Poisson"="pois",
-      #               "Uniforma"="unif",
-      #               "Exponentiala"="exp",
-      #               "Normala"="norm")
-      #   customd <- sapply(1:ex2_rvs$cnt, function(a){
-      #     return(sprintf("c%d", a))
-      #   })
-      #   names(customd) = sapply(1:ex2_rvs$cnt, function(a){
-      #     return(sprintf("Custom v.a. discreta %d", a))
-      #   })
-      #   customc <- sapply(1:ex2_fcts$cnt, function(a){
-      #     return(sprintf("c%d", a))
-      #   })
-      #   names(customc) = sapply(1:ex2_fcts$cnt, function(a){
-      #     return(sprintf("Custom v.a. continua %d", a))
-      #   })
-      #   predef <- c(predef, customd, customc)
-      #   selectInput("va_selected", label="VA", predef)
-      # })
     })
     
     observeEvent(input$ex_2_btnc, {
@@ -660,6 +650,7 @@ server <- function(input, output, session) {
       ex2_fcts$cnt <- ex2_fcts$cnt + 1
       ex2_fcts$arr[[ex2_fcts$cnt]] <- list(input$ex_2_f, input$ex_2_cstart, input$ex_2_cend)
     })
+    
     #########
     # Ex. 5 #
     #########
@@ -772,6 +763,202 @@ server <- function(input, output, session) {
           df, options = list(pageLength=10)
         )
       })
+    })
+    
+    #########
+    # Ex. 6 #
+    #########
+    
+    observeEvent(input$ex_6_btn, {
+      tip <- input$va_selected
+      if(tip == "unif" || tip == "norm" || tip == "exp" || startsWith(tip, "c")){
+        instr <- input$ex_6_in
+        if(tip == "unif"){
+          a <- input$ex_1_unif_a
+          b <- input$ex_1_unif_b
+          p <- 0
+          if(substring(instr, 2, 3) == "<="){
+            val <- as.numeric(substring(instr, 4))
+            p <- punif(val, a, b)
+          }
+          else if(substring(instr, 2, 2) == "<"){
+            val <- as.numeric(substring(instr, 3))
+            p <- punif(val, a, b)
+          }
+          else if(substring(instr, 2, 3) == ">="){
+            val <- as.numeric(substring(instr, 4))
+            p <- 1 - punif(val, a, b)
+          }
+          else if(substring(instr, 2, 2) == ">"){
+            val <- as.numeric(substring(instr, 3))
+            p <- 1 -punif(val, a, b)
+          }
+          else if(substring(instr, 2, 3) == "=="){
+            p <- 0
+          }
+          else {
+            output$ex_6_out <- renderText({
+              "Operatie invalida!"
+            })
+            return()
+          }
+          output$ex_6_out <- renderText({
+            paste("P(", instr, ") = ", p, sep="")
+          })
+        }
+        if(tip == "norm"){
+          n <- input$ex_1_norm_m
+          d <- input$ex_1_norm_d
+          p <- 0
+          if(substring(instr, 2, 3) == "<="){
+            val <- as.numeric(substring(instr, 4))
+            p <- pnorm(val, n, d)
+          }
+          else if(substring(instr, 2, 2) == "<"){
+            val <- as.numeric(substring(instr, 3))
+            p <- punif(val, n, d)
+          }
+          else if(substring(instr, 2, 3) == ">="){
+            val <- as.numeric(substring(instr, 4))
+            p <- 1 - punif(val, n, d)
+          }
+          else if(substring(instr, 2, 2) == ">"){
+            val <- as.numeric(substring(instr, 3))
+            p <- 1 -punif(val, n, d)
+          }
+          else if(substring(instr, 2, 3) == "=="){
+            p <- 0
+          }
+          else {
+            output$ex_6_out <- renderText({
+              "Operatie invalida!"
+            })
+            return()
+          }
+          output$ex_6_out <- renderText({
+            paste("P(", instr, ") = ", p, sep="")
+          })
+        }
+        if(tip == "exp"){
+          l <- input$ex_1_exp_l
+          p <- 0
+          if(substring(instr, 2, 3) == "<="){
+            val <- as.numeric(substring(instr, 4))
+            p <- pexp(val, l)
+          }
+          else if(substring(instr, 2, 2) == "<"){
+            val <- as.numeric(substring(instr, 3))
+            p <- pexp(val, l)
+          }
+          else if(substring(instr, 2, 3) == ">="){
+            val <- as.numeric(substring(instr, 4))
+            p <- 1 - pexp(val, l)
+          }
+          else if(substring(instr, 2, 2) == ">"){
+            val <- as.numeric(substring(instr, 3))
+            p <- 1 -pexp(val, l)
+          }
+          else if(substring(instr, 2, 3) == "=="){
+            p <- 0
+          }
+          else {
+            output$ex_6_out <- renderText({
+              "Operatie invalida!"
+            })
+            return()
+          }
+          output$ex_6_out <- renderText({
+            paste("P(", instr, ") = ", p, sep="")
+          })
+        }
+        if(startsWith(tip, "c")){
+          tip <- input$va_selected
+          a <- strtoi(substring(tip, 2))
+          func_string <- ex2_fcts$arr[[a]][[1]]
+          cstart <- ex2_fcts$arr[[a]][[2]]
+          cend <- ex2_fcts$arr[[a]][[3]]
+          
+          f <-  function(x) {
+            check <- mapply(function(val){
+              if(val < cstart)
+                return(FALSE)
+              else if(val > cend){
+                return(FALSE)
+              }
+              else return(TRUE)
+            }, x)
+            x <- eval(parse(text=func_string))
+            x[!check] <- 0
+            return(x)
+          }
+          
+          Fx <- function(x) {
+            return(
+              mapply(function(x){
+                return(integrate(f, -Inf, x)$value)
+              }, x)
+            )
+          }
+          p <- 0
+          if(substring(instr, 2, 3) == "<="){
+            val <- as.numeric(substring(instr, 4))
+            p <- Fx(val)
+          }
+          else if(substring(instr, 2, 2) == "<"){
+            val <- as.numeric(substring(instr, 3))
+            p <- Fx(val)
+          }
+          else if(substring(instr, 2, 3) == ">="){
+            val <- as.numeric(substring(instr, 4))
+            p <- 1 - Fx(val)
+          }
+          else if(substring(instr, 2, 2) == ">"){
+            val <- as.numeric(substring(instr, 3))
+            p <- 1 - Fx(val)
+          }
+          else if(substring(instr, 2, 3) == "=="){
+            p <- 0
+          }
+          else {
+            output$ex_6_out <- renderText({
+              "Operatie invalida!"
+            })
+            return()
+          }
+          output$ex_6_out <- renderText({
+            paste("P(", instr, ") = ", p, sep="")
+          })
+        }
+      }
+      else {
+        if(tip == "bern"){
+          p <- input$ex_1_bern_p
+          X <- RV(c(0,1), c(1-p, p))
+        }
+        
+        if(tip == "binom"){
+          X <- RV(0:input$ex_1_binom_n, dbinom(0:input$ex_1_binom_n,input$ex_1_binom_n,input$ex_1_binom_p)) 
+        }
+        
+        if(tip == "geom"){
+          X <- RV(0:input$ex_5_dim, dgeom(0:input$ex_5_dim, input$ex_1_geom_p))
+        }
+        
+        if(tip == "hgeom"){
+          X <- RV(0:input$ex_1_hgeom_k, dhyper(0:input$ex_1_hgeom_k,input$ex_1_hgeom_m,input$ex_1_hgeom_n,input$ex_1_hgeom_k)) 
+        }
+        
+        if(tip == "pois"){
+          X <- RV(0:input$ex_5_dim, dpois(0:input$ex_5_dim, input$ex_1_pois_l))
+        }
+        
+        if(startsWith(tip, "d")){
+          nr <- strtoi(substring(tip, 2))
+          X <- ex2_rvs$arr[[nr]]
+        }
+        
+        print(P(eval(parse(text = input$ex_6_in))))
+      }
     })
     
     #########
