@@ -585,6 +585,31 @@ server <- function(input, output, session) {
       
       ex2_rvs$cnt <- ex2_rvs$cnt + 1
       ex2_rvs$arr[[ex2_rvs$cnt]] <-  X
+      
+      # output$va_select <- renderUI({
+      #   predef <- c("Bernoulli"="bern",
+      #               "Binomiala"="binom",
+      #               "Geometrica"="geom",
+      #               "Hipergeometrica"="hgeom",
+      #               "Poisson"="pois",
+      #               "Uniforma"="unif",
+      #               "Exponentiala"="exp",
+      #               "Normala"="norm")
+      #   customd <- sapply(1:ex2_rvs$cnt, function(a){
+      #     return(sprintf("c%d", a))
+      #   })
+      #   names(customd) = sapply(1:ex2_rvs$cnt, function(a){
+      #     return(sprintf("Custom v.a. discreta %d", a))
+      #   })
+      #   customc <- sapply(1:ex2_fcts$cnt, function(a){
+      #     return(sprintf("c%d", a))
+      #   })
+      #   names(customc) = sapply(1:ex2_fcts$cnt, function(a){
+      #     return(sprintf("Custom v.a. continua %d", a))
+      #   })
+      #   predef <- c(predef, customd, customc)
+      #   selectInput("va_selected", label="VA", predef)
+      # })
     })
     
     observeEvent(input$ex_2_btnc, {
@@ -650,7 +675,6 @@ server <- function(input, output, session) {
       ex2_fcts$cnt <- ex2_fcts$cnt + 1
       ex2_fcts$arr[[ex2_fcts$cnt]] <- list(input$ex_2_f, input$ex_2_cstart, input$ex_2_cend)
     })
-    
     #########
     # Ex. 5 #
     #########
@@ -669,50 +693,35 @@ server <- function(input, output, session) {
         if(input$ex_1_bern_p == 0 || input$ex_1_bern_p == 0){
           ex_5_max$val <- 1
           updateSliderInput(session, "ex_5_begin", min=0, max=0, value=0)
-          updateSliderInput(session, "ex_7_begin", min=0, max=0, value=0)
         }
         else{
           ex_5_max$val <- 2
           updateSliderInput(session, "ex_5_begin", min=0, max=1, value=0)
-          updateSliderInput(session, "ex_7_begin", min=0, max=1, value=0)
         }
       }
       if(tip == "binom"){
         ex_5_max$val <- input$ex_1_binom_n + 1
         updateSliderInput(session, "ex_5_begin", min=0, max=input$ex_1_binom_n, value=0)
-        updateSliderInput(session, "ex_7_begin", min=0, max=input$ex_1_binom_n, value=0)
       }
       if(tip == "hgeom"){
         ex_5_max$val <- input$ex_1_hgeom_k + 1
         updateSliderInput(session, "ex_5_begin", min=0, max=input$ex_1_hgeom_k, value=0)
-        updateSliderInput(session, "ex_7_begin", min=0, max=input$ex_1_hgeom_k, value=0)
       }
       if(startsWith(tip, "d")){
         nr <- strtoi(substring(tip, 2))
         ex_5_max$val <- length(probs(ex2_rvs$arr[[nr]]))
         updateSliderInput(session, "ex_5_begin", min=0, max=ex_5_max$val, value=0)
-        updateSliderInput(session, "ex_7_begin", min=0, max=ex_7_max$val, value=0)
       }
       if(tip == "geom" || tip == "pois"){
         output$ex_5_shownum <- renderUI({
           numericInput("ex_5_dim", "N max:", 0)
         })
-        output$ex_7_shownum <- renderUI({
-          numericInput("ex_7_dim", "N max:", 0)
-        })
-        observeEvent(input$ex_5_dim, {
-          ex_5_max$val <- input$ex_5_dim + 1
-          updateSliderInput(session, "ex_5_begin", min=0, max=input$ex_5_dim, value=0)
-          updateSliderInput(session, "ex_7_begin", min=0, max=input$ex_7_dim, value=0)
-        })
       }
       else {
         output$ex_5_shownum <- renderUI({
         })
-        output$ex_7_shownum <- renderUI({
-        })
       }
-    })
+    
     
     observeEvent(input$ex_5_btn, {
       tip <- input$va_selected
@@ -739,6 +748,11 @@ server <- function(input, output, session) {
       
       if(tip == "geom"){
         X <- RV(0:input$ex_5_dim, dgeom(0:input$ex_5_dim, input$ex_1_geom_p))
+        observeEvent(input$ex_5_dim, {
+          ex_5_max$val <- input$ex_5_dim 
+          if(input$ex_5_dim>length(outcomes(X))){ma=length(outcomes(X))}else{ma=input$ex_5_dim}
+          updateSliderInput(session, "ex_5_begin", min=0, max=ma, value=0)
+        })
       }
       
       if(tip == "hgeom"){
@@ -747,6 +761,11 @@ server <- function(input, output, session) {
       
       if(tip == "pois"){
         X <- RV(0:input$ex_5_dim, dpois(0:input$ex_5_dim, input$ex_1_pois_l))
+        observeEvent(input$ex_5_dim, {
+          ex_5_max$val <- input$ex_5_dim 
+          if(input$ex_5_dim>length(outcomes(X))){ma=length(outcomes(X))}else{ma=input$ex_5_dim}
+          updateSliderInput(session, "ex_5_begin", min=0, max=ma, value=0)
+        })
       }
       
       if(startsWith(tip, "d")){
@@ -758,11 +777,12 @@ server <- function(input, output, session) {
       Probabilities <-  probs(X)
       df <- data.frame(Outcomes,Probabilities)
       observeEvent(input$ex_5_begin,{
-        df <- tail(df,ex_5_max$val-input$ex_5_begin)
+        df <- tail(df,length(Outcomes)-input$ex_5_begin)
         output$ex_5_tbl = renderDT(
           df, options = list(pageLength=10)
         )
       })
+    })
     })
     
     #########
@@ -956,17 +976,59 @@ server <- function(input, output, session) {
           nr <- strtoi(substring(tip, 2))
           X <- ex2_rvs$arr[[nr]]
         }
-        
-        print(P(eval(parse(text = input$ex_6_in))))
+        output$ex_6_out <- renderText({
+          paste("P(", input$ex_6_in, ") = ", P(eval(parse(text = input$ex_6_in))), sep="")
+        })
       }
     })
-    
     #########
     # Ex. 7 #
     #########
     
-    observeEvent(input$ex_7_btn, {
+    ex_7_max <- reactiveValues(val = 0)
+    observeEvent(input$va_selected, {
       tip <- input$va_selected
+      if(tip == "unif" || tip == "norm" || tip == "exp" || startsWith(tip, "c")){
+        output$ex_7_txt <- renderText({
+          paste("VA aleasa nu este discreta!")
+        })
+        return()
+      }
+      if(tip == "bern"){
+        if(input$ex_1_bern_p == 0 || input$ex_1_bern_p == 0){
+          ex_7_max$val <- 1
+          updateSliderInput(session, "ex_7_begin", min=0, max=0, value=0)
+        }
+        else{
+          ex_7_max$val <- 2
+          updateSliderInput(session, "ex_7_begin", min=0, max=1, value=0)
+        }
+      }
+      if(tip == "binom"){
+        ex_7_max$val <- input$ex_1_binom_n + 1
+        updateSliderInput(session, "ex_7_begin", min=0, max=input$ex_1_binom_n, value=0)
+      }
+      if(tip == "hgeom"){
+        ex_7_max$val <- input$ex_1_hgeom_k + 1
+        updateSliderInput(session, "ex_7_begin", min=0, max=input$ex_1_hgeom_k, value=0)
+      }
+      if(startsWith(tip, "d")){
+        nr <- strtoi(substring(tip, 2))
+        ex_7_max$val <- length(probs(ex2_rvs$arr[[nr]]))
+        updateSliderInput(session, "ex_7_begin", min=0, max=ex_7_max$val, value=0)
+      }
+      if(tip == "geom" || tip == "pois"){
+        output$ex_7_shownum <- renderUI({
+          numericInput("ex_7_dim", "N max:", 0)
+        })
+      }
+      else {
+        output$ex_7_shownum <- renderUI({
+        })
+      }
+      
+      
+    observeEvent(input$ex_7_btn, {
       if(tip == "unif" || tip == "norm" || tip == "exp" || startsWith(tip, "c")){
         output$ex_7_txt <- renderText({
           paste("VA aleasa nu este discreta!")
@@ -990,6 +1052,11 @@ server <- function(input, output, session) {
       
       if(tip == "geom"){
         X <- RV(0:input$ex_7_dim, dgeom(0:input$ex_7_dim, input$ex_1_geom_p))
+        observeEvent(input$ex_7_dim, {
+          ex_7_max$val <- input$ex_7_dim 
+          if(input$ex_7_dim>length(outcomes(X))){ma=length(outcomes(X))}else{ma=input$ex_7_dim}
+          updateSliderInput(session, "ex_7_begin", min=0, max=ma, value=0)
+        })
       }
       
       if(tip == "hgeom"){
@@ -998,6 +1065,11 @@ server <- function(input, output, session) {
       
       if(tip == "pois"){
         X <- RV(0:input$ex_7_dim, dpois(0:input$ex_7_dim, input$ex_1_pois_l))
+        observeEvent(input$ex_7_dim, {
+          ex_7_max$val <- input$ex_7_dim 
+          if(input$ex_7_dim>length(outcomes(X))){ma=length(outcomes(X))}else{ma=input$ex_7_dim}
+          updateSliderInput(session, "ex_7_begin", min=0, max=ma, value=0)
+        })
       }
       
       if(startsWith(tip, "d")){
@@ -1012,13 +1084,13 @@ server <- function(input, output, session) {
       Probabilities <-  probs(X)
       df <- data.frame(Outcomes,Probabilities)
       observeEvent(input$ex_7_begin,{
-        df <- tail(df,ex_5_max$val-input$ex_7_begin)
+        df <- tail(df,length(Outcomes)-input$ex_7_begin)
         output$ex_7_tbl = renderDT(
           df, options = list(pageLength=10)
         )
       })
     })
-    
+    })
     #########
     # Ex. 8 #
     #########
