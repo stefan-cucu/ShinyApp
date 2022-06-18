@@ -866,11 +866,11 @@ server <- function(input, output, session) {
       observeEvent(input$ex_8_eval, {
         f = function(x) {eval(parse(text = input$ex8_functionInput))}
         output$ex_8_med <- renderText(
-          f(input$ex_1_norm_m)
+          {paste("Media este: ",f(input$ex_1_norm_m))}
         )
         output$ex_8_disp <-
           renderText(
-            f(input$ex_1_norm_d)
+            {paste("Dispersia este: ",f(input$ex_1_norm_d))}
           )
       })
       
