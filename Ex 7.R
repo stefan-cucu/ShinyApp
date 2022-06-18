@@ -16,20 +16,20 @@ shinyApp(
     df <-data.frame(Outcomes,Probabilities)
     observeEvent(input$begin,
                  {
-                 output$tbl = renderDT(
-                   df, options = list(pageLength=10)
-                 )
-                 df <- tail(df,101-input$begin)
-                 observeEvent(input$evaluate,{
-                   f = function(x) {eval(parse(text = input$functionInput))}
-                   Y=f(X)
-                   Outcomes = outcomes(Y)
-                   Probabilities = probs(Y)
-                   df <-data.frame(Outcomes,Probabilities)
                    output$tbl = renderDT(
-                     tail(df,101-input$begin), options = list(pageLength=10)
+                     df, options = list(pageLength=10)
                    )
-                 })
+                   df <- tail(df,101-input$begin)
+                   observeEvent(input$evaluate,{
+                     f = function(x) {eval(parse(text = input$functionInput))}
+                     Y=f(X)
+                     Outcomes = outcomes(Y)
+                     Probabilities = probs(Y)
+                     df <-data.frame(Outcomes,Probabilities)
+                     output$tbl = renderDT(
+                       tail(df,101-input$begin), options = list(pageLength=10)
+                     )
+                   })
                  })
   }
 )

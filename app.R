@@ -1,6 +1,7 @@
 library(shiny)
 library(shinydashboard)
 library(discreteRV)
+library(dplyr)
 library(rlist)
 
 # Define UI for application
@@ -10,7 +11,7 @@ ui <- dashboardPage(
     sidebarMenu(
       menuItem("Ex. 1 - Galerie", tabName="ex1", icon = icon('th')),
       menuItem("Ex. 2", tabName="ex2", icon = icon('th')),
-      menuItem("Ex. 5", tabName="ex5"),
+      menuItem("Ex. 3", tabName="ex3"),
       menuItem("Ex. 6", tabName="ex6"),
       menuItem("Ex. 7", tabName="ex7"),
       menuItem("Ex. 8", tabName="ex8")
@@ -107,27 +108,54 @@ ui <- dashboardPage(
             "Media",
             "Dispersia"
           ),
-          uiOutput("ex2discrete")
+          uiOutput("ex2discrete"),
+          uiOutput("ex2continue")
         )
       ),
       tabItem(
         tabName = "ex2",
         fluidPage(
           titlePanel("Ex. 2"),
-          fluidRow(
-            column(4,
-                   numericInput("nrVal2", "Introduceti numarul valorilor", 1, min = 1),
-                   uiOutput("table2"),
-                   actionButton("do2", "Introducere"),
-                   verbatimTextOutput("proprietati2")),
-            
-            column(4,
-                   h3("Functia de masa"),
-                   plotOutput("fctmasa2")
+          tabsetPanel(
+            tabPanel(
+              title="V.A. Discrete",
+              fluidRow(
+                column(4,
+                       numericInput("nrVal2", "Introduceti numarul valorilor", 1, min = 1),
+                       uiOutput("table2"),
+                       actionButton("do2", "Introducere"),
+                       verbatimTextOutput("proprietati2")),
+                
+                column(4,
+                       h3("Functia de masa"),
+                       plotOutput("fctmasa2")
+                ),
+                column(4,
+                       h3("Functia de repartitie"),
+                       plotOutput("fctrepart2"))
+              )
             ),
-            column(4,
-                   h3("Functia de repartitie"),
-                   plotOutput("fctrepart2"))
+            tabPanel(
+              title="V.A. Continue",
+              fluidRow(
+                column(4, 
+                       textInput("ex_2_f", "f(x)=", width = "70%"),
+                       splitLayout(cellWidths = c("35%", "35%"), 
+                                   numericInput("ex_2_cstart", "Start interval", value=0),
+                                   numericInput("ex_2_cend", "Sfarsit interval", value=0)),
+                       actionButton("ex_2_btnc", "Introducere"),
+                       verbatimTextOutput("proprietatic2")
+                ),
+                column(4,
+                       h3("Functia de densitate"),
+                       plotOutput("ex_2_cdens")
+                ),
+                column(4,
+                       h3("Functia de repartitie"),
+                       plotOutput("ex_2_crep")
+                )
+              )
+            )
           )
         )
       ),
@@ -317,7 +345,7 @@ server <- function(input, output) {
         })
         box(
           title=sprintf("V.A. Discreta #%d", a), status="primary", solidHeader=TRUE, collapsible=TRUE,
-          "Functia de densitate",
+          "Functia de masa",
           plotOutput(sprintf("ex_1_#%d_plot1", a), height = "290px"),
           "Functia de repartitie",
           plotOutput(sprintf("ex_1_#%d_plot2", a), height = "290px"),
@@ -327,11 +355,75 @@ server <- function(input, output) {
       })
     })
     
+    output$ex2continue <- renderUI({
+      if(ex2_fcts$cnt == 0)
+        return()
+      
+      lapply(1:ex2_fcts$cnt, function(a) {
+        func_string <- ex2_fcts$arr[[a]][[1]]
+        cstart <- ex2_fcts$arr[[a]][[2]]
+        cend <- ex2_fcts$arr[[a]][[3]]
+        
+        f <-  function(x) {
+          check <- mapply(function(val){
+            if(val < cstart)
+              return(FALSE)
+            else if(val > cend){
+              return(FALSE)
+            }
+            else return(TRUE)
+          }, x)
+          x <- eval(parse(text=func_string))
+          x[!check] <- 0
+          return(x)
+        }
+        
+        Fx <- function(x) {
+          return(
+            mapply(function(x){
+              return(integrate(f, -Inf, x)$value)
+            }, x)
+          )
+        }
+        
+        output[[sprintf("ex_2_#%d_plot1", a)]] <- renderPlot({
+          domeniu <- seq(cstart, cend, 0.1)
+          valori <- f(domeniu)
+          plot(domeniu, valori, type='l')
+        })
+        
+        output[[sprintf("ex_2_#%d_plot2", a)]] <- renderPlot({
+          domeniu <- seq(cstart - 1, cend + 1, 0.1)
+          valori <- Fx(domeniu)
+          plot(domeniu, valori, type='l')
+        })
+        
+        media <- integrate(function(x){
+          x * f(x)
+        }, -Inf, Inf)$value
+        
+        dispersia <- integrate(function(x){
+          x * x * f(x)
+        }, -Inf, Inf)$value
+        
+        box(
+          title=sprintf("V.A. Continua #%d", a), status="warning", solidHeader=TRUE, collapsible=TRUE,
+          "Functia de densitate",
+          plotOutput(sprintf("ex_2_#%d_plot1", a), height = "290px"),
+          "Functia de repartitie",
+          plotOutput(sprintf("ex_2_#%d_plot2", a), height = "290px"),
+          paste("Media: ", media),
+          paste("Dispersia: ", dispersia)
+        )
+      })
+    })
+    
     #########
     # Ex. 2 #
     #########
     
-    ex2_rvs <- reactiveValues(arr = list(), cnt = 0) 
+    ex2_rvs <- reactiveValues(arr = list(), cnt = 0)
+    ex2_fcts <- reactiveValues(arr = list(), cnt = 0)
     
     output$table2 <- renderUI({
       
@@ -427,6 +519,70 @@ server <- function(input, output) {
       
       ex2_rvs$cnt <- ex2_rvs$cnt + 1
       ex2_rvs$arr[[ex2_rvs$cnt]] <-  X
+    })
+    
+    observeEvent(input$ex_2_btnc, {
+      if(input$ex_2_cstart > input$ex_2_cend){
+        output$proprietatic2 <- renderText({
+          paste("Interval gresit!")
+        })
+        return()
+      }
+      
+      f <-  function(x) {
+        check <- mapply(function(val){
+          if(val < input$ex_2_cstart)
+            return(FALSE)
+          else if(val > input$ex_2_cend){
+            return(FALSE)
+          }
+          else return(TRUE)
+        }, x)
+        x <- eval(parse(text=input$ex_2_f))
+        x[!check] <- 0
+        return(x)
+      }
+      
+      if(between(integrate(f, input$ex_2_cstart-1, input$ex_2_cend)$value, 0.95, 1.05) == FALSE){
+        output$proprietatic2 <- renderText({
+          paste("Functie gresita!")
+        })
+        return()
+      }
+      
+      Fx <- function(x) {
+        return(
+          mapply(function(x){
+            return(integrate(f, -Inf, x)$value)
+          }, x)
+        )
+      }
+      
+      output$ex_2_cdens <- renderPlot({
+        domeniu <- seq(input$ex_2_cstart, input$ex_2_cend, 0.1)
+        valori <- f(domeniu)
+        plot(domeniu, valori, type='l')
+      })
+      
+      output$ex_2_crep <- renderPlot({
+        domeniu <- seq(input$ex_2_cstart - 1, input$ex_2_cend + 1, 0.1)
+        valori <- Fx(domeniu)
+        plot(domeniu, valori, type='l')
+      })
+      
+      output$proprietatic2 <- renderText({
+        media <- integrate(function(x){
+          x * f(x)
+        }, -Inf, Inf)$value
+        dispersia <- integrate(function(x){
+          x * x * f(x)
+        }, -Inf, Inf)$value
+        paste("Media repartitiei este: ", media,
+              "\nDispersia repartitiei este: ", dispersia)
+      })
+      
+      ex2_fcts$cnt <- ex2_fcts$cnt + 1
+      ex2_fcts$arr[[ex2_fcts$cnt]] <- list(input$ex_2_f, input$ex_2_cstart, input$ex_2_cend)
     })
 }
 
