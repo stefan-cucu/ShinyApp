@@ -190,6 +190,17 @@ ui <- dashboardPage(
           textOutput("ex_7_txt"),
           DTOutput('ex_7_tbl')
         ),
+      ),
+      tabItem(
+        tabName = "ex8",
+        fluidPage(
+          titlePanel("Ex. 8"),
+          textInput(inputId = "ex8_functionInput", "Function"),
+          uiOutput("ex_8_shownum"),
+          actionButton('ex_8_eval', "Evaluate"),
+          textOutput("ex_8_med"),
+          textOutput("ex_8_disp")
+        )
       )
     )
   )
@@ -821,8 +832,26 @@ server <- function(input, output, session) {
       })
     })
     
+    #########
+    # Ex. 8 #
+    #########
+    observeEvent(input$va_selected, {
+      tip <- input$va_selected
+      if (tip == "norm") {
+        observeEvent(input$ex_8_eval, {
+          f = function(x) {eval(parse(text = input$ex8_functionInput))}
+          output$ex_8_med <- renderText(
+            {paste("Media este: ",f(input$ex_1_norm_m))}
+          )
+          output$ex_8_disp <-
+            renderText(
+              {paste("Dispersia este: ",f(input$ex_1_norm_d))}
+            )
+        })
+        
+      }
+    })
 }
 
 # Run the application 
 shinyApp(ui = ui, server = server)
-
