@@ -131,8 +131,15 @@ server <- function(input, output, session) {
       
     if(any(is.na(mat))){
       output$mesajEroare9 <- renderText({"Tabelul nu se poate completa!"})
+      output$proprietati9 <- renderUI({p("")})
+      output$medieX9 <- renderText("")
+      output$medieY9 <- renderText("")
+      output$dispersieX9 <- renderText("")
+      output$dispersieY9 <- renderText("")
+      output$covarianta9 <- renderText("")
+      output$coef9 <- renderText("")
     } else {
-      
+      output$mesajEroare9 <- renderText("")
     
     ### urmatoarele chestii ar trebui sa se execute doar daca nu sunt erori
     
