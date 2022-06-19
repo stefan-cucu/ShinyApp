@@ -1125,7 +1125,7 @@ server <- function(input, output, session) {
         observeEvent(input$ex_5_begin,{
           df <- tail(df,ex_5_max$val-input$ex_5_begin)
           output$ex_5_tbl = renderDT(
-            df, options = list(pageLength=10)
+             datatable(df, options=list(pageLength= 10),rownames= FALSE)
           )
         })
       })
@@ -1444,7 +1444,7 @@ server <- function(input, output, session) {
         observeEvent(input$ex_7_begin,{
           df <- tail(df,ex_7_max$val-input$ex_7_begin)
           output$ex_7_tbl = renderDT(
-            df, options = list(pageLength=10)
+             datatable(df, options=list(pageLength= 10),rownames= FALSE)
           )
         })
       })
