@@ -12,10 +12,14 @@ ui <- dashboardPage(
     sidebarMenu(
       menuItem("Ex. 1 - Galerie", tabName="ex1", icon = icon('th')),
       menuItem("Ex. 2", tabName="ex2", icon = icon('th')),
+      menuItem("Ex. 3", tabName="ex3", icon = icon('th')),
       menuItem("Ex. 5", tabName="ex5"),
       menuItem("Ex. 6", tabName="ex6"),
       menuItem("Ex. 7", tabName="ex7"),
-      menuItem("Ex. 8", tabName="ex8")
+      menuItem("Ex. 8", tabName="ex8"),
+      menuItem("Ex. 9", tabName="ex9"),
+      menuItem("Ex. 11", tabName="ex11"),
+      menuItem("Ex. 12", tabName="ex12")
     )
   ),
   dashboardBody(
@@ -103,6 +107,31 @@ ui <- dashboardPage(
           ),
           uiOutput("ex2discrete"),
           uiOutput("ex2continue")
+        )
+      ),
+      tabItem(
+        tabName = "ex3",
+        fluidPage(
+          titlePanel("Ex3"),
+          fluidRow(
+            sidebarLayout(sidebarPanel(
+              radioButtons("ex_3_tip", "A si B sunt:",
+                           c("Independente" = "indep",
+                             "Incompatibile" = "incomp",
+                             "Nu se stie nimic despre ele" = "idk")),
+              actionButton("ex_3_btn", "Calculeaza")
+            ), 
+            
+            mainPanel( textOutput("ex_3_eroare"),
+                       numericInput("ex_3_PA", "P(A)", NULL),
+                       numericInput("ex_3_PB", "P(B)", NULL),
+                       numericInput("ex_3_PAorB", "P(A∪B)", NULL),
+                       numericInput("ex_3_PAandB", "P(A∩B)", NULL),
+                       numericInput("ex_3_PArB", "P(A\\B)", NULL),
+                       numericInput("ex_3_PBrA", "P(B\\A)", NULL)
+            )
+            )
+          )
         )
       ),
       tabItem(
@@ -207,6 +236,119 @@ ui <- dashboardPage(
           actionButton('ex_8_eval', "Evaluate"),
           textOutput("ex_8_med"),
           textOutput("ex_8_disp")
+        )
+      ),
+      tabItem(
+        tabName = "ex9",
+        fluidPage(
+          titlePanel("Ex9"),
+          fluidRow(
+            tags$head(
+              tags$style(HTML("
+        table {
+          font-family: arial, sans-serif;
+          border-collapse: collapse;
+          width: 40%;
+          margin: 0px 0px 30px 0px;
+        }
+        
+        td, th {
+          border: 1px solid #dddddd;
+          text-align: left;
+          padding: 8px;
+          text-align:center;
+        }
+        
+        "))),
+            column(6,
+                   numericInput("nrValX9", "Introduceti numarul valorilor lui X", 1, min = 1),
+                   numericInput("nrValY9", "Introduceti numarul valorilor lui Y", 1, min = 1),
+                   uiOutput("tabel9"),
+                   actionButton("do9", "Completeaza")
+            ),
+            column(6,
+                   uiOutput("proprietati9"),
+                   textOutput("mesajEroare9"),
+                   textOutput("medieX9"),
+                   textOutput("medieY9"),
+                   textOutput("dispersieX9"),
+                   textOutput("dispersieY9"),
+                   textOutput("covarianta9"),
+                   textOutput("coef9")
+            )
+          )
+        )
+      ),
+      tabItem(
+        tabName = "ex11",
+        fluidPage(
+          titlePanel("Ex11"),
+          
+          fluidRow(
+            column(6,fileInput("ex_11_fisier",
+                               label="Adaugati fisierului:",
+                               multiple = FALSE,accept = ".csv"),
+                   actionButton("ex_11_btn_fisier", "Calculeaza folosind fisierul")),
+            column(6,numericInput("ex_11_nrVal","Introduceti numarul valorilor:", 1, min = 1),
+                   uiOutput("ex_11_table"),
+                   actionButton("ex_11_btn_val", "Calculeaza folosind datele"))
+          ),
+          
+          fluidRow(
+            column(12, textOutput("ex_11_med"),
+                   textOutput("ex_11_q1"),
+                   textOutput("ex_11_q2"),
+                   textOutput("ex_11_q3")
+            )
+          ),
+          
+          fluidRow(
+            column(6, plotOutput("ex_11_hist")),
+            column(6, plotOutput("ex_11_box"))
+          )
+        )
+      ),
+      tabItem(
+        tabName = "ex12",
+        fluidPage(
+          titlePanel("Ex12"),
+          tags$head(
+            tags$style(HTML("
+        table {
+          font-family: arial, sans-serif;
+          border-collapse: collapse;
+          width: 100%;
+          margin: 0px 0px 30px 0px;
+        }
+        
+        td, th {
+          border: 1px solid #dddddd;
+          text-align: left;
+          padding: 8px;
+          text-align:center;
+        }
+        
+        "))),
+          
+          fluidRow(
+            column(6,
+                   numericInput("ex_12_nrValX", "Introduceti numarul valorilor lui X", 1, min = 1),
+                   uiOutput("ex_12_tabelX")),
+            
+            column(6,numericInput("ex_12_nrValY", "Introduceti numarul valorilor lui Y", 1, min = 1),
+                   uiOutput("ex_12_tabelY"))
+          ),
+          fluidRow(
+            column(12,
+                   radioButtons("ex_12_tip", "Operatia dintre X si Y:",
+                                c("Suma" = "suma",
+                                  "Diferenta" = "dif",
+                                  "Produs" = "prod",
+                                  "Raport" = "rap")),
+                   actionButton("ex_12_btn", "Calculeaza"),
+                   uiOutput("ex_12_rezultat")
+            )
+          )
         )
       )
     )
@@ -716,6 +858,160 @@ server <- function(input, output, session) {
       ex2_fcts$arr[[ex2_fcts$cnt]] <- list(input$ex_2_f, input$ex_2_cstart, input$ex_2_cend)
     })
     #########
+    # Ex. 3 #
+    #########
+    observeEvent(input$ex_3_btn, {
+      pa <- input$ex_3_PA
+      pb <- input$ex_3_PB
+      reun <- input$ex_3_PAorB
+      inter <- input$ex_3_PAandB
+      AcondB <- input$ex_3_PArB
+      BcondA <- input$ex_3_PBrA
+      ok <- TRUE
+      
+      if(input$ex_3_tip == "incomp") {
+        inter <- 0
+        AcondB <- 0
+        BcondA <- 0
+        
+        if(!is.na(pa) && !is.na(pb)) {
+          reun <- pa + pb
+        } else if(!is.na(pa) && !is.na(reun)){
+          pb <- reun - pa
+        } else if(!is.na(pb) && !is.na(reun)){
+          pa <- reun - pb
+        } else {ok <- FALSE}
+        
+      } else if(input$ex_3_tip == "indep") {
+        if(!is.na(pa)) { AcondB <- pa } else if(!is.na(AcondB)) { pa <- AcondB }
+        if(!is.na(pb)) { BcondA <- pb } else if(!is.na(BcondA)) { pb <- BcondA }
+        
+        if(!is.na(pa) && !is.na(pb)) {
+          inter <- pa * pb
+          reun <- pa + pb - inter
+        } else if(!is.na(pa) && !is.na(inter)) {
+          pb <- inter / pa
+          BcondA <- pb
+          reun <- pa + pb - inter
+        } else if(!is.na(pb) && !is.na(inter)) {
+          pa <- inter / pb
+          AcondB <- pa
+          reun <- pa + pb - inter
+        } else { ok <- FALSE}
+        
+      } else {
+        if(!is.na(pa) && !is.na(pb) && !is.na(reun)) {
+          inter <- reun - pa - pb
+          AcondB <- inter / pb
+          BcondA <- inter / pa
+          
+        } else if(!is.na(pa) && !is.na(pb) && !is.na(inter)) {
+          reun <- pa + pb - inter
+          AcondB <- inter / pb
+          BcondA <- inter / pa
+          
+        } else if(!is.na(pa) && !is.na(pb) && !is.na(AcondB)) {
+          inter <- AcondB * pa
+          reun <- pa + pb - inter
+          BcondA <- inter / pa
+          
+        } else if(!is.na(pa) && !is.na(pb) && !is.na(BcondA)) {
+          inter <- BcondA * pb
+          reun <- pa + pb - inter
+          BcondA <- inter / pa
+          
+        } else if(!is.na(pa) && !is.na(reun) && !is.na(inter)) {
+          pb <- reun - pa + inter
+          AcondB <- inter / pb
+          BcondA <- inter / pa
+          
+        } else if(!is.na(pa) && !is.na(reun) && !is.na(AcondB)) {
+          pb <- (reun - pa) / (1-AcondB)
+          inter <- pa + pb - reun
+          BcondA <- inter / pa
+          
+        } else if(!is.na(pa) && !is.na(reun) && !is.na(BcondA)) {
+          inter <- BcondA * pa
+          pb <- reun - pa + inter
+          AcondB <- inter / pb
+          
+        } else if(!is.na(pa) && !is.na(inter) && !is.na(AcondB)) {
+          pb <- inter / AcondB 
+          reun <- pa + pb - inter
+          BcondA <- inter / pb
+          
+        } else if(!is.na(pa) && !is.na(AcondB) && !is.na(BcondA)) {
+          inter <-  pa * BcondA
+          pb <- inter / AcondB
+          reun <-  pa + pb - inter
+          
+        } else if(!is.na(pb) && !is.na(reun) && !is.na(inter)) {
+          pa <- reun - pb + inter
+          AcondB <- inter / pb
+          BcondA <- inter / pa
+          
+        } else if(!is.na(pb) && !is.na(reun) && !is.na(AcondB)) {
+          inter <- AcondB * pb
+          pa <- reun - pb + inter
+          BcondA <- inter / pa
+          
+        } else if(!is.na(pb) && !is.na(reun) && !is.na(BcondA)) {
+          pa <- (reun - pb) / (1-BcondA)
+          inter <- pa + pb - reun
+          AcondB <- inter / pb
+          
+        } else if(!is.na(pb) && !is.na(inter) && !is.na(BcondA)) {
+          pa <- inter / BcondA 
+          reun <- pa + pb - inter
+          AcondB <- inter / pa
+          
+        } else if(!is.na(pb) && !is.na(AcondB) && !is.na(BcondA)) {
+          inter <-  pb * AcondB
+          pb <- inter / AcondB
+          reun <-  pa + pb - inter
+          
+        } else if(!is.na(reun) && !is.na(inter) && !is.na(AcondB)) {
+          pb <- inter / AcondB
+          pa <- reun - pb + inter
+          BcondA <- inter / pa
+          
+        } else if(!is.na(reun) && !is.na(inter) && !is.na(BcondA)) {
+          pa <- inter / BcondA
+          pb <- reun - pa + inter
+          BcondA <- inter / pa
+          
+        } else if(!is.na(reun) && !is.na(AcondB) && !is.na(BcondA)) {
+          inter <- reun / (1/BcondA + 1/AcondB - 1)
+          pa <- inter / BcondA
+          pb <- inter / AcondB
+          
+        } else if(!is.na(inter) && !is.na(AcondB) && !is.na(BcondA)) {
+          pa <- inter / BcondA
+          pb <- inter / AcondB
+          reun <- pa + pb - inter
+          
+        } else { ok <- FALSE }
+      }
+      
+      if(ok) {
+        output$ex_3_eroare <- renderText("")
+        updateNumericInput(session, "ex_3_PA", value = pa)
+        updateNumericInput(session, "ex_3_PB", value = pb)
+        updateNumericInput(session, "ex_3_PAorB", value = reun)
+        updateNumericInput(session, "ex_3_PAandB", value = inter)
+        updateNumericInput(session, "ex_3_PArB", value = AcondB)
+        updateNumericInput(session, "ex_3_PBrA", value = BcondA)
+      } else {
+        output$ex_3_eroare <- renderText("Tabelul nu se poate completa")
+        updateNumericInput(session, "ex_3_PA", value = NULL)
+        updateNumericInput(session, "ex_3_PB", value = NULL)
+        updateNumericInput(session, "ex_3_PAorB", value = NULL)
+        updateNumericInput(session, "ex_3_PAandB", value = NULL)
+        updateNumericInput(session, "ex_3_PArB", value = NULL)
+        updateNumericInput(session, "ex_3_PBrA", value = NULL)
+      }
+    })
+    #########
     # Ex. 5 #
     #########
     
@@ -1172,6 +1468,383 @@ server <- function(input, output, session) {
         
       }
     })
+    #########
+    # Ex. 9 #
+    #########  
+      output$tabel9 <- renderUI({
+        tabel <- lapply(1:(input$nrValX9+2), function(val){
+          
+          line <- lapply(1:(input$nrValY9+2), function(val2){
+            if(val == 1 && val2 == 1) {
+              div(style="display: inline-block; width: 70px; text-align:center;", 
+                  p("X\\Y")
+              )
+            } else if(val == 1 && val2 == (input$nrValY9+2)) {
+              div(style="display: inline-block; width: 70px; text-align:center;", 
+                  p("Pi")
+              ) 
+            } else if(val == (input$nrValX9+2) && val2 == 1) {
+              div(style="display: inline-block; width: 70px; text-align:center;", 
+                  p("Qj")
+              ) 
+            } else{
+              div(style="display: inline-block; width: 70px;", 
+                  numericInput(paste("tabRepCom", val, val2, sep=""),"",NULL, min = 0) )
+            }
+          })
+          
+          tags$div(
+            div(style="display: inline-block; width: 100px; margin-bottom:0; margin-top:0;"),
+            tagList(line)
+          )
+        })
+      })
+      
+      observeEvent(input$do9, {
+        mat <-  NULL
+        
+        for(i in 2:(input$nrValX9+2)) {
+          mat <- rbind(mat, sapply(2:(input$nrValY9+2), function(j){
+            input[[paste("tabRepCom", i, j, sep="")]]}))
+        }
+        
+        # dif e o variabila de tip boolean
+        # care retine 1 in cazul in care la o pargurgere a while-ului s-a modificat matricea
+        # sau 0 in caz contrar
+        # daca la o parcurgere nu s-a modificat matricea, atunci aceasta nu se poate completa
+        
+        nrlin <- nrow(mat)
+        nrcol <- ncol(mat)
+        mat[nrlin, nrcol] = 1
+        
+        dif <- TRUE
+        while(dif){
+          dif <- FALSE
+          # se parcurg toate liniile si toate coloanele din matrice
+          # daca pe linie / coloana exista o singura valoare necompletata, atunci se poate completa
+          
+          #pentru fiecare linie
+          for(i in 1:nrlin) {
+            poz <- which(is.na(mat[i,])) # indicii coloanelor de pe linia i pe care se afla NA
+            
+            if(length(poz) == 1) {# daca e un singur indice, atunci se poate completa
+              dif <- TRUE
+              
+              mat[i,poz] <- ifelse(poz == nrcol,
+                                   sum(mat[i,], na.rm = TRUE),
+                                   mat[i,nrcol] - sum(mat[i,1:(nrcol-1)], na.rm = TRUE))
+            }
+          }
+          
+          #analog pentru fiecare coloana
+          for(j in 1:nrcol) {
+            poz <- which(is.na(mat[,j])) 
+            
+            if(length(poz) == 1) {
+              dif <- TRUE
+              
+              mat[poz, j] <- ifelse(poz == nrcol,
+                                    sum(mat[,j], na.rm = TRUE),
+                                    mat[nrlin,j] - sum(mat[1:(nrlin-1),j], na.rm = TRUE))
+            }
+          }
+        }
+        
+        # eventual de facut o verificare a faptului ca s a completat bine
+        # sau ca valorile introduse au fost corecte
+        # de ex, probabilitatile sunt >= 0
+        # valorile pentru X si Y trebuie introduse obligatoriu
+        # suma prob marg trebuie sa fie 1
+        
+        if(any(is.na(mat))){
+          output$mesajEroare9 <- renderText({"Tabelul nu se poate completa!"})
+          output$proprietati9 <- renderUI({p("")})
+          output$medieX9 <- renderText("")
+          output$medieY9 <- renderText("")
+          output$dispersieX9 <- renderText("")
+          output$dispersieY9 <- renderText("")
+          output$covarianta9 <- renderText("")
+          output$coef9 <- renderText("")
+        } else {
+          output$mesajEroare9 <- renderText("")
+          
+          ### urmatoarele chestii ar trebui sa se execute doar daca nu sunt erori
+          
+          # se actualizeaza tabelul
+          for(i in 1:nrlin) {
+            for(j in 1:nrcol) {
+              updateNumericInput(session, paste("tabRepCom",i+1, j+1, sep=""), value = mat[i,j])
+            }
+          }
+          
+          
+          #crearea variabilelor X si Y
+          valX <- sapply(2:(input$nrValX9+1), function(ind) {
+            input[[paste("tabRepCom", ind, 1, sep="")]]
+          })
+          
+          valY <- sapply(2:(input$nrValY9+1), function(ind) {
+            input[[paste("tabRepCom", 1, ind, sep="")]]
+          })
+          
+          probX <- mat[1:(nrlin-1),nrcol]
+          probY <- mat[nrlin,1:(nrcol-1)]
+          
+          #repart marginale
+          X <- RV(valX, probX)
+          Y <- RV(valY, probY)
+          
+          # mediile
+          EX <- E(X)
+          EY <- E(Y)
+          
+          # dispersiile
+          VX <- V(X)
+          VY <- V(Y)
+          
+          #covarianta
+          prod <- function(out_rep_X, out_rep_Y, prob_rep) {
+            allOutcomes <- as.vector(sapply(out_rep_X, function(x){x*out_rep_Y}))
+            outcomes <- unique(allOutcomes)
+            
+            probs <- sapply(outcomes, function(out){
+              indices <- which(allOutcomes==out)
+              return(sum(prob_rep[indices]))
+            })
+            return(RV(outcomes, probs))
+          }
+          
+          XtimesY <- prod(valX, valY, as.vector(t(mat[1:(nrlin-1), 1:(nrcol-1)])))
+          cov <- E(XtimesY) - E(X)*E(Y)
+          
+          #coeficientul de corelatie
+          coef <- cov/sqrt(V(X)*V(Y))
+          
+          
+          ### Afisarea rezultatelor
+          firstRowX <- lapply(valX, function(val) {tags$th(val)})
+          
+          secondRowX <- lapply(probX, function(val) {tags$td(val)})
+          
+          firstRowY <- lapply(valY, function(val) {tags$th(val)})
+          
+          secondRowY <- lapply(probY, function(val) {tags$td(val)})
+          
+          output$proprietati9 <- renderUI({
+            
+            tags$div(
+              h3("Proprietati"),
+              p("Repartitiile marginale"),
+              tags$table(
+                tags$tr(
+                  tags$th("X:"),
+                  firstRowX
+                ),
+                tags$tr(
+                  tags$td(""),
+                  secondRowX
+                )
+              ),
+              tags$table(
+                tags$tr(
+                  tags$th("Y:"),
+                  firstRowY
+                ),
+                tags$tr(
+                  tags$td(""),
+                  secondRowY
+                )
+              )
+              
+            )
+          })
+          
+          output$medieX9 <- renderText({
+            paste("Media lui X este ", EX)
+          })
+          
+          output$medieY9 <- renderText({
+            paste("Media lui Y este ", EY)
+          })
+          
+          output$dispersieX9 <- renderText({
+            paste("Dispersia lui X este ", VX)
+          })
+          
+          output$dispersieY9 <- renderText({
+            paste("Dispersia lui Y este ", VY)
+          })
+          
+          output$covarianta9 <- renderText({
+            paste("Covarianta este egala cu ", round(cov, digits = 2))
+          })
+          
+          output$coef9 <- renderText({
+            paste("Coeficientul de corelatie este egal cu ", round(coef, digits = 2))
+          })
+        }
+      })
+    #########
+    # Ex.11 #
+    #########
+      output$ex_11_table <- renderUI({
+        values <- lapply(1:input$ex_11_nrVal, function(val){
+          div(style="display: inline-block; width: 70px;", 
+              numericInput(paste("ex_11_val", val, sep=""),"",NULL) )
+        })
+        
+        tags$div(
+          div(style="display: inline-block; width: 100px;","Valori:"),
+          tagList(values)
+        )
+      })
+      
+      observeEvent(input$ex_11_btn_val, {
+        values <- sapply(1:input$ex_11_nrVal, function(ind) { input[[paste("ex_11_val", ind, sep="")]]})
+        
+        mediana <- median(values)
+        q1 <- quantile(values, 1/4)
+        q2 <- quantile(values, 2/4)
+        q3 <- quantile(values, 3/4)
+        
+        output$ex_11_med <- renderText({paste("Mediana este:", mediana)})
+        output$ex_11_q1 <- renderText({paste("Prima quartila este:", q1)})
+        output$ex_11_q2 <- renderText({paste("A doua quartila este:", q2)})
+        output$ex_11_q3 <- renderText({paste("A treia quartila este:", q3)})
+        
+        output$ex_11_hist <- renderPlot({hist(values)})
+        output$ex_11_box <- renderPlot({boxplot(values)})
+      })
+      
+      observeEvent(input$ex_11_btn_fisier, {
+        inFile <- input$ex_11_fisier
+        dataFile <- read_excel(inFile$datapath,sheet=1)
+        values <- dataFile[[1]]
+        
+        mediana <- median(values)
+        q1 <- quantile(values, 1/4)
+        q2 <- quantile(values, 2/4)
+        q3 <- quantile(values, 3/4)
+        
+        output$ex_11_med <- renderText({paste("Mediana este:", mediana)})
+        output$ex_11_q1 <- renderText({paste("Prima quartila este:", q1)})
+        output$ex_11_q2 <- renderText({paste("A doua quartila este:", q2)})
+        output$ex_11_q3 <- renderText({paste("A treia quartila este:", q3)})
+        
+        output$ex_11_hist <- renderPlot({hist(values)})
+        output$ex_11_box <- renderPlot({boxplot(values)})
+      })  
+    #########
+    # Ex.12 #
+    ######### 
+      output$ex_12_tabelX <- renderUI({
+        values <- lapply(1:input$ex_12_nrValX, function(val){
+          div(style="display: inline-block; width: 70px;", 
+              numericInput(paste("ex_9_Xvalue", val, sep=""),"",0, min = 0) )
+        })
+        
+        probs <- lapply(1:input$ex_12_nrValX, function(val){
+          div(style="display: inline-block; width: 70px;", 
+              numericInput(paste("ex_9_Xprob", val, sep=""),"",0, min = 0) )
+        })
+        
+        tags$div(
+          tags$div(
+            div(style="display: inline-block; width: 100px;","Valori:"),
+            tagList(values)
+          ),
+          tags$div(
+            div(style="display: inline-block; width: 100px;","Probabilitati:"),
+            tagList(probs)))
+      })
+      
+      output$ex_12_tabelY <- renderUI({
+        values <- lapply(1:input$ex_12_nrValY, function(val){
+          div(style="display: inline-block; width: 70px;", 
+              numericInput(paste("ex_9_Yvalue", val, sep=""),"",0, min = 0) )
+        })
+        
+        probs <- lapply(1:input$ex_12_nrValY, function(val){
+          div(style="display: inline-block; width: 70px;", 
+              numericInput(paste("ex_9_Yprob", val, sep=""),"",0, min = 0) )
+        })
+        
+        tags$div(
+          tags$div(
+            div(style="display: inline-block; width: 100px;","Valori:"),
+            tagList(values)
+          ),
+          tags$div(
+            div(style="display: inline-block; width: 100px;","Probabilitati:"),
+            tagList(probs)))
+      })
+      
+      observeEvent(input$ex_12_btn, {
+        
+        xvalues <- sapply(1:input$ex_12_nrValX, function(ind) {
+          input[[paste("ex_9_Xvalue", ind, sep="")]]
+        })
+        
+        xprobs <- sapply(1:input$ex_12_nrValX, function(ind) {
+          input[[paste("ex_9_Xprob", ind, sep="")]]
+        })
+        
+        yvalues <- sapply(1:input$ex_12_nrValY, function(ind) {
+          input[[paste("ex_9_Yvalue", ind, sep="")]]
+        })
+        
+        yprobs <- sapply(1:input$ex_12_nrValY, function(ind) {
+          input[[paste("ex_9_Yprob", ind, sep="")]]
+        })
+        
+        
+        text <- NULL
+        allOutcomes <- NULL
+        
+        if(input$ex_12_tip == "suma") {
+          text <- "X + Y"
+          allOutcomes <- as.vector(sapply(xvalues, function(val){ val + yvalues}))
+          
+        } else if(input$ex_12_tip == "dif") {
+          text <- "X - Y"
+          allOutcomes <- as.vector(sapply(xvalues, function(val){ val - yvalues }))
+          
+        } else if(input$ex_12_tip == "prod") {
+          text <- "X * Y"
+          allOutcomes <- as.vector(sapply(xvalues, function(val){ val * yvalues }))
+          
+        } else if(input$ex_12_tip == "rap") {
+          text <- "X / Y"
+          allOutcomes <- as.vector(sapply(xvalues, function(val){ val / yvalues}))
+        }
+        
+        allProbs <- as.vector(sapply(xprobs, function(pr){ pr * yprobs }))
+        
+        outcomes <- sort(unique(allOutcomes))
+        probs <- sapply(outcomes, function(out){
+          poz <- which(out == allOutcomes)
+          sum(allProbs[poz])
+        })
+        
+        firstRow <- lapply(outcomes, function(out) {tags$th(out)})
+        secondRow <- lapply(probs, function(prob) {tags$th(prob)})
+        
+        output$ex_12_rezultat <- renderUI({
+          
+          tags$div(
+            tags$table(
+              tags$tr(
+                tags$th(text),
+                firstRow
+              ),
+              tags$tr(
+                tags$td(""),
+                secondRow
+              )
+            )
+          )
+        })
+      })
 }
 
 # Run the application 
