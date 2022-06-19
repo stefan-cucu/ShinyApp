@@ -1026,7 +1026,7 @@ server <- function(input, output, session) {
         return()
       }
       if(tip == "bern"){
-        if(input$ex_1_bern_p == 0 || input$ex_1_bern_p == 0){
+        if(input$ex_1_bern_p == 0 || input$ex_1_bern_p == 1){
           ex_5_max$val <- 1
           updateSliderInput(session, "ex_5_begin", min=0, max=0, value=0)
         }
@@ -1076,7 +1076,7 @@ server <- function(input, output, session) {
         if(tip == "bern"){
           p <- input$ex_1_bern_p
           X <- RV(c(0,1), c(1-p, p))
-          if(input$ex_1_bern_p == 0 || input$ex_1_bern_p == 0){
+          if(input$ex_1_bern_p == 0 || input$ex_1_bern_p == 1){
             ex_5_max$val <- 1
             updateSliderInput(session, "ex_5_begin", min=0, max=0, value=0)
           }
@@ -1342,7 +1342,7 @@ server <- function(input, output, session) {
         return()
       }
       if(tip == "bern"){
-        if(input$ex_1_bern_p == 0 || input$ex_1_bern_p == 0){
+        if(input$ex_1_bern_p == 0 || input$ex_1_bern_p == 1){
           ex_7_max$val <- 1
           updateSliderInput(session, "ex_7_begin", min=0, max=0, value=0)
         }
@@ -1392,7 +1392,7 @@ server <- function(input, output, session) {
         if(tip == "bern"){
           p <- input$ex_1_bern_p
           X <- RV(c(0,1), c(1-p, p))
-          if(input$ex_1_bern_p == 0 || input$ex_1_bern_p == 0){
+          if(input$ex_1_bern_p == 0 || input$ex_1_bern_p == 1){
             ex_7_max$val <- 1
             updateSliderInput(session, "ex_7_begin", min=0, max=0, value=0)
           }
