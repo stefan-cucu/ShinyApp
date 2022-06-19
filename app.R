@@ -1459,7 +1459,7 @@ server <- function(input, output, session) {
           f = function(x) {eval(parse(text = input$ex8_functionInput))}
           p <- input$ex_1_bern_p
           output$ex_8_med_disp <- renderText(
-            {paste("Media este: ",f(p)," Dispersia este: ",f(p*(1-p)))}
+            {paste("Media este: ",f(p))}
           )
         })
       }
@@ -1469,7 +1469,7 @@ server <- function(input, output, session) {
           p <- input$ex_1_binom_p
           n <- input$ex_1_binom_n
           output$ex_8_med_disp <- renderText(
-            {paste("Media este: ",f(p*n)," Dispersia este: ", f(n * p * (1 - p)))}
+            {paste("Media este: ",f(p*n))}
           )
         })
       }
@@ -1478,7 +1478,7 @@ server <- function(input, output, session) {
           f = function(x) {eval(parse(text = input$ex8_functionInput))}
           p <- input$ex_1_geom_p
           output$ex_8_med_disp <- renderText(
-            {paste("Media este: ",f((1-p)/p)," Dispersia este: ", f((1 - p) / (p ^ 2)))}
+            {paste("Media este: ",f((1-p)/p))}
           )
         })
       }
@@ -1490,7 +1490,7 @@ server <- function(input, output, session) {
           k <- input$ex_1_hgeom_k
           p <- m / (m + n)
           output$ex_8_med_disp <- renderText(
-            {paste("Media este: ",f(k*p)," Dispersia este: ", f(k * p * (1 - p) * (m + n - k) / (m + n - 1)))}
+            {paste("Media este: ",f(k*p))}
           )
         })
       }
@@ -1499,7 +1499,7 @@ server <- function(input, output, session) {
           f = function(x) {eval(parse(text = input$ex8_functionInput))}
           l <- input$ex_1_pois_l
           output$ex_8_med_disp <- renderText(
-            {paste("Media este: ",f(l)," Dispersia este: ", f(l))}
+            {paste("Media este: ",f(l))}
           )
         })
       }
@@ -1509,7 +1509,7 @@ server <- function(input, output, session) {
           a <- input$ex_1_unif_a
           b <- input$ex_1_unif_b
           output$ex_8_med_disp <- renderText(
-            {paste("Media este: ",f(0.5 * (a + b))," Dispersia este: ", f(((b - a) ^ 2) / 12))}
+            {paste("Media este: ",f(0.5 * (a + b)))}
           )
         })
       }
@@ -1518,7 +1518,7 @@ server <- function(input, output, session) {
           f = function(x) {eval(parse(text = input$ex8_functionInput))}
           l <- input$ex_1_exp_l
           output$ex_8_med_disp <- renderText(
-            {paste("Media este: ",f(1 / l)," Dispersia este: ", f(1 / (l ^ 2)))}
+            {paste("Media este: ",f(1 / l))}
           )
         })
       }
@@ -1526,7 +1526,7 @@ server <- function(input, output, session) {
         observeEvent(input$ex_8_eval, {
           f = function(x) {eval(parse(text = input$ex8_functionInput))}
           output$ex_8_med_disp <- renderText(
-            {paste("Media este: ",f(input$ex_1_norm_m)," Dispersia este: ",f((input$ex_1_norm_d)^2))}
+            {paste("Media este: ",f(input$ex_1_norm_m))}
           )
         })
       }
