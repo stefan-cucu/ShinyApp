@@ -31,8 +31,7 @@ ui <- dashboardPage(
             plotOutput("ex_1_bern_plot1", height = "290px"),
             "Functia de repartitie",
             plotOutput("ex_1_bern_plot2", height = "290px"),
-            "Media",
-            "Dispersia"
+            textOutput("ex_1_bern_txt")
           ),
           box(
             title="Binomiala", status="primary", solidHeader=TRUE, collapsible=TRUE,
@@ -42,8 +41,7 @@ ui <- dashboardPage(
             plotOutput("ex_1_binom_plot1", height = "290px"),
             "Functia de repartitie",
             plotOutput("ex_1_binom_plot2", height = "290px"),
-            "Media",
-            "Dispersia"
+            textOutput("ex_1_binom_txt")
           ),
           box(
             title="Geometrica", status="primary", solidHeader=TRUE, collapsible=TRUE,
@@ -52,8 +50,7 @@ ui <- dashboardPage(
             plotOutput("ex_1_geom_plot1", height = "290px"),
             "Functia de repartitie",
             plotOutput("ex_1_geom_plot2", height = "290px"),
-            "Media",
-            "Dispersia"
+            textOutput("ex_1_geom_txt")
           ),
           box(
             title="Hipergeometrica", status="primary", solidHeader=TRUE, collapsible=TRUE,
@@ -64,8 +61,7 @@ ui <- dashboardPage(
             plotOutput("ex_1_hgeom_plot1", height = "290px"),
             "Functia de repartitie",
             plotOutput("ex_1_hgeom_plot2", height = "290px"),
-            "Media",
-            "Dispersia"
+            textOutput("ex_1_hgeom_txt")
           ),
           box(
             title="Poisson", status="primary", solidHeader=TRUE, collapsible=TRUE,
@@ -74,8 +70,7 @@ ui <- dashboardPage(
             plotOutput("ex_1_pois_plot1", height = "290px"),
             "Functia de repartitie",
             plotOutput("ex_1_pois_plot2", height = "290px"),
-            "Media",
-            "Dispersia"
+            textOutput("ex_1_pois_txt")
           ),
           box(
             title="Uniforma", status="warning", solidHeader=TRUE, collapsible=TRUE,
@@ -85,8 +80,7 @@ ui <- dashboardPage(
             plotOutput("ex_1_unif_plot1", height = "290px"),
             "Functia de repartitie",
             plotOutput("ex_1_unif_plot2", height = "290px"),
-            "Media",
-            "Dispersia"
+            textOutput("ex_1_unif_txt")
           ),
           box(
             title="Exponentiala", status="warning", solidHeader=TRUE, collapsible=TRUE,
@@ -95,19 +89,17 @@ ui <- dashboardPage(
             plotOutput("ex_1_exp_plot1", height = "290px"),
             "Functia de repartitie",
             plotOutput("ex_1_exp_plot2", height = "290px"),
-            "Media",
-            "Dispersia"
+            textOutput("ex_1_exp_txt")
           ),
           box(
             title="Normala", status="warning", solidHeader=TRUE, collapsible=TRUE,
             numericInput("ex_1_norm_m", "Media:", 1),
-            numericInput("ex_1_norm_d", "Dispersia:", 1, min=0.001),
+            numericInput("ex_1_norm_d", "Deviatia standard:", 1, min=0.001),
             "Functia de densitate",
             plotOutput("ex_1_norm_plot1", height = "290px"),
             "Functia de repartitie",
             plotOutput("ex_1_norm_plot2", height = "290px"),
-            "Media",
-            "Dispersia"
+            textOutput("ex_1_norm_txt")
           ),
           uiOutput("ex2discrete"),
           uiOutput("ex2continue")
@@ -281,6 +273,11 @@ server <- function(input, output, session) {
       plot(x, y, type='l')
     })
     
+    output$ex_1_bern_txt <- renderText({
+      p <- input$ex_1_bern_p
+      paste("Media:", p, "\nDispersia:", p * (1 - p))
+    })
+    
     # Binom
     output$ex_1_binom_plot1 <- renderPlot({
       p <- input$ex_1_binom_p
@@ -298,6 +295,12 @@ server <- function(input, output, session) {
       plot(x,pbinom(x,n,p), type='l')
     })
     
+    output$ex_1_binom_txt <- renderText({
+      p <- input$ex_1_binom_p
+      n <- input$ex_1_binom_n
+      paste("Media:", p*n, "\nDispersia:", n * p * (1 - p))
+    })
+    
     # Geom
     output$ex_1_geom_plot1 <- renderPlot({
       p <- input$ex_1_geom_p
@@ -309,6 +312,11 @@ server <- function(input, output, session) {
       p <- input$ex_1_geom_p
       x <- seq(0, 6,0.001)
       plot(x,pgeom(x,p), type='l')
+    })
+    
+    output$ex_1_geom_txt <- renderText({
+      p <- input$ex_1_geom_p
+      paste("Media:", (1 - p) / p, "\nDispersia:", (1 - p) / (p ^ 2))
     })
     
     # Hgeom
@@ -329,6 +337,14 @@ server <- function(input, output, session) {
       plot(x,phyper(x,m,n,k), type='l')
     })
     
+    output$ex_1_hgeom_txt <- renderText({
+      n <- input$ex_1_hgeom_n
+      m <- input$ex_1_hgeom_m
+      k <- input$ex_1_hgeom_k
+      p <- m / (m + n)
+      paste("Media:", k * p, "\nDispersia:", k * p * (1 - p) * (m + n - k) / (m + n - 1))
+    })
+    
     # Pois
     output$ex_1_pois_plot1 <- renderPlot({
       l <- input$ex_1_pois_l
@@ -340,6 +356,11 @@ server <- function(input, output, session) {
       l <- input$ex_1_pois_l
       x <- seq(0, 6,0.001)
       plot(x,ppois(x,l), type='l')
+    })
+    
+    output$ex_1_pois_txt <- renderText({
+      l <- input$ex_1_pois_l
+      paste("Media:", l, "\nDispersia:", l)
     })
     
     # Unif
@@ -360,6 +381,12 @@ server <- function(input, output, session) {
       plot(x,punif(x,a,b), type='l')
     })
     
+    output$ex_1_unif_txt <- renderText({
+      a <- input$ex_1_unif_a
+      b <- input$ex_1_unif_b
+      paste("Media:", 0.5 * (a + b), "\nDispersia:", ((b - a) ^ 2) / 12)
+    })
+    
     # Exp
     output$ex_1_exp_plot1 <- renderPlot({
       l <- input$ex_1_exp_l
@@ -373,6 +400,11 @@ server <- function(input, output, session) {
       
       x <- seq(0, 6, 0.1)
       plot(x,pexp(x,l), type='l')
+    })
+    
+    output$ex_1_exp_txt <- renderText({
+      l <- input$ex_1_exp_l
+      paste("Media:", 1 / l, "\nDispersia:", 1 / (l ^ 2))
     })
     
     # Norm
@@ -392,6 +424,11 @@ server <- function(input, output, session) {
       plot(x, pnorm(x,n,d), type='l')
     })
     
+    output$ex_1_norm_txt <- renderText({
+      n <- input$ex_1_norm_m
+      d <- input$ex_1_norm_d
+      paste("Media:", n, "\nDispersia:", d ^ 2)
+    })
     
     output$ex2discrete <- renderUI({
       if(ex2_rvs$cnt == 0)
@@ -409,14 +446,17 @@ server <- function(input, output, session) {
           })
           plot(domeniu, codomeniu, pch=19, type='l')
         })
+        output[[sprintf("ex_1_#%d_text", a)]] <- renderText({
+          X <- ex2_rvs$arr[[a]]
+          paste("Media:", E(X), "\nDispersia:", V(X))
+        })
         box(
           title=sprintf("V.A. Discreta #%d", a), status="primary", solidHeader=TRUE, collapsible=TRUE,
           "Functia de masa",
           plotOutput(sprintf("ex_1_#%d_plot1", a), height = "290px"),
           "Functia de repartitie",
           plotOutput(sprintf("ex_1_#%d_plot2", a), height = "290px"),
-          "Media",
-          "Dispersia"
+          textOutput(sprintf("ex_1_#%d_text", a))
         )
       })
     })
