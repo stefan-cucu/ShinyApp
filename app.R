@@ -236,6 +236,7 @@ ui <- dashboardPage(
           uiOutput("ex_8_shownum"),
           actionButton('ex_8_eval', "Evaluate"),
           textOutput("ex_8_med_disp"),
+          plotOutput("ex_8_plot")
         )
       ),
       tabItem(
@@ -1542,11 +1543,24 @@ server <- function(input, output, session) {
       }
       if(startsWith(tip, "c")) {
         observeEvent(input$ex_8_eval, {
-          g  <-  function(x) {eval(parse(text = input$ex8_functionInput))}
+          
           nr <- strtoi(substring(tip, 2))
           cstart <- ex2_fcts$arr[[nr]][[2]]
           cend <- ex2_fcts$arr[[nr]][[3]]
           func_string <- ex2_fcts$arr[[nr]][[1]]
+          g  <-  function(x) {
+            check <- mapply(function(val){
+              if(val < cstart)
+                return(FALSE)
+              else if(val > cend){
+                return(FALSE)
+              }
+              else return(TRUE)
+            }, x)
+            x<-eval(parse(text = input$ex8_functionInput))
+            x[!check] <- 0
+            return(x)
+          }
           f <-  function(x) {
             check <- mapply(function(val){
               if(val < cstart)
@@ -1560,7 +1574,7 @@ server <- function(input, output, session) {
             x[!check] <- 0
             return(x)
           }
-          if(between(integrate(function(x){g(f(x))}, input$ex_2_cstart, input$ex_2_cend)$value, 0.98, 1.02) == FALSE){
+          if(between(integrate(function(x){g(f(x))}, cstart, cend)$value, 0.98, 1.02) == FALSE){
             output$ex_8_med_disp <- renderText({
               paste("Functie gresita!")
             })
@@ -1568,12 +1582,11 @@ server <- function(input, output, session) {
           }
           media <- integrate(function(x){
             x * (g(f(x)))
-          }, -Inf, Inf)$value
-    
+          }, cstart, cend)$value
+
           media2 <- integrate(function(x){
             x * x * (g(f(x)))
-          }, -Inf, Inf)$value
-          print(paste("Media este: ",media," Dispersia este: ",media2))
+          }, cstart, cend)$value
           output$ex_8_med_disp <- renderText(
             {paste("Media este: ",media," Dispersia este: ",media * media - media2)}
           )
