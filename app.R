@@ -721,69 +721,80 @@ server <- function(input, output, session) {
         output$ex_5_shownum <- renderUI({
         })
       }
-    
-    
-    observeEvent(input$ex_5_btn, {
-      tip <- input$va_selected
-      if(tip == "unif" || tip == "norm" || tip == "exp" || startsWith(tip, "c")){
-        output$ex_5_txt <- renderText({
-          paste("VA aleasa nu este discreta!")
+    })  
+      
+      observeEvent(input$ex_5_btn, {
+        tip <- input$va_selected
+        if(tip == "unif" || tip == "norm" || tip == "exp" || startsWith(tip, "c")){
+          output$ex_5_txt <- renderText({
+            paste("VA aleasa nu este discreta!")
+          })
+          return()
+        }
+        else {
+          output$ex_5_txt <- renderText({
+            paste("")
+          })
+        }
+        
+        if(tip == "bern"){
+          p <- input$ex_1_bern_p
+          X <- RV(c(0,1), c(1-p, p))
+          if(input$ex_1_bern_p == 0 || input$ex_1_bern_p == 0){
+            ex_5_max$val <- 1
+            updateSliderInput(session, "ex_5_begin", min=0, max=0, value=0)
+          }
+          else{
+            ex_5_max$val <- 2
+            updateSliderInput(session, "ex_5_begin", min=0, max=1, value=0)
+          }
+        }
+        
+        if(tip == "binom"){
+          X <- RV(0:input$ex_1_binom_n, dbinom(0:input$ex_1_binom_n,input$ex_1_binom_n,input$ex_1_binom_p))
+          ex_5_max$val <- input$ex_1_binom_n + 1
+          updateSliderInput(session, "ex_5_begin", min=0, max=input$ex_1_binom_n, value=0)
+        }
+        
+        if(tip == "geom"){
+          X <- RV(0:input$ex_5_dim, dgeom(0:input$ex_5_dim, input$ex_1_geom_p))
+          observeEvent(input$ex_5_dim, {
+            if(input$ex_5_dim>length(outcomes(X))){ex_5_max$val <- length(outcomes(X))+1}else{ex_5_max$val <- input$ex_5_dim+1}
+            updateSliderInput(session, "ex_5_begin", min=0, max=ex_5_max$val-1, value=0)
+          })
+        }
+        
+        if(tip == "hgeom"){
+          X <- RV(0:input$ex_1_hgeom_k, dhyper(0:input$ex_1_hgeom_k,input$ex_1_hgeom_m,input$ex_1_hgeom_n,input$ex_1_hgeom_k))
+          if(input$ex_1_hgeom_k>length(outcomes(X))){ex_5_max$val <- length(outcomes(X))+1}else{ex_5_max$val <- input$ex_1_hgeom_k+1}
+          updateSliderInput(session, "ex_5_begin", min=0, max=ex_5_max$val-1, value=0)
+        }
+        
+        if(tip == "pois"){
+          X <- RV(0:input$ex_5_dim, dpois(0:input$ex_5_dim, input$ex_1_pois_l))
+          observeEvent(input$ex_5_dim, {
+            if(input$ex_5_dim>length(outcomes(X))){ex_5_max$val <- length(outcomes(X))+1}else{ex_5_max$val <- input$ex_5_dim+1}
+            updateSliderInput(session, "ex_5_begin", min=0, max=ex_5_max$val-1, value=0)
+          })
+        }
+        
+        if(startsWith(tip, "d")){
+          nr <- strtoi(substring(tip, 2))
+          X <- ex2_rvs$arr[[nr]]
+        }
+        
+        Outcomes <-  outcomes(X)
+        Probabilities <-  probs(X)
+        df <- data.frame(Outcomes,Probabilities)
+        observeEvent(input$ex_5_begin,{
+          df <- tail(df,ex_5_max$val-input$ex_5_begin)
+          output$ex_5_tbl = renderDT(
+            df, options = list(pageLength=10)
+          )
         })
-        return()
-      }
-      else {
-        output$ex_5_txt <- renderText({
-          paste("")
-        })
-      }
-      
-      if(tip == "bern"){
-        p <- input$ex_1_bern_p
-        X <- RV(c(0,1), c(1-p, p))
-      }
-      
-      if(tip == "binom"){
-        X <- RV(0:input$ex_1_binom_n, dbinom(0:input$ex_1_binom_n,input$ex_1_binom_n,input$ex_1_binom_p)) 
-      }
-      
-      if(tip == "geom"){
-        X <- RV(0:input$ex_5_dim, dgeom(0:input$ex_5_dim, input$ex_1_geom_p))
-        observeEvent(input$ex_5_dim, {
-          ex_5_max$val <- input$ex_5_dim 
-          if(input$ex_5_dim>length(outcomes(X))){ma=length(outcomes(X))}else{ma=input$ex_5_dim}
-          updateSliderInput(session, "ex_5_begin", min=0, max=ma, value=0)
-        })
-      }
-      
-      if(tip == "hgeom"){
-        X <- RV(0:input$ex_1_hgeom_k, dhyper(0:input$ex_1_hgeom_k,input$ex_1_hgeom_m,input$ex_1_hgeom_n,input$ex_1_hgeom_k)) 
-      }
-      
-      if(tip == "pois"){
-        X <- RV(0:input$ex_5_dim, dpois(0:input$ex_5_dim, input$ex_1_pois_l))
-        observeEvent(input$ex_5_dim, {
-          ex_5_max$val <- input$ex_5_dim 
-          if(input$ex_5_dim>length(outcomes(X))){ma=length(outcomes(X))}else{ma=input$ex_5_dim}
-          updateSliderInput(session, "ex_5_begin", min=0, max=ma, value=0)
-        })
-      }
-      
-      if(startsWith(tip, "d")){
-        nr <- strtoi(substring(tip, 2))
-        X <- ex2_rvs$arr[[nr]]
-      }
-      
-      Outcomes <-  outcomes(X)
-      Probabilities <-  probs(X)
-      df <- data.frame(Outcomes,Probabilities)
-      observeEvent(input$ex_5_begin,{
-        df <- tail(df,length(Outcomes)-input$ex_5_begin)
-        output$ex_5_tbl = renderDT(
-          df, options = list(pageLength=10)
-        )
       })
-    })
-    })
+    
+    
     
     #########
     # Ex. 6 #
@@ -1026,71 +1037,82 @@ server <- function(input, output, session) {
         output$ex_7_shownum <- renderUI({
         })
       }
+    })  
       
-      
-    observeEvent(input$ex_7_btn, {
-      if(tip == "unif" || tip == "norm" || tip == "exp" || startsWith(tip, "c")){
-        output$ex_7_txt <- renderText({
-          paste("VA aleasa nu este discreta!")
+      observeEvent(input$ex_7_btn, {
+        tip <- input$va_selected
+        if(tip == "unif" || tip == "norm" || tip == "exp" || startsWith(tip, "c")){
+          output$ex_7_txt <- renderText({
+            paste("VA aleasa nu este discreta!")
+          })
+          return()
+        }
+        else {
+          output$ex_7_txt <- renderText({
+            paste("")
+          })
+        }
+        
+        if(tip == "bern"){
+          p <- input$ex_1_bern_p
+          X <- RV(c(0,1), c(1-p, p))
+          if(input$ex_1_bern_p == 0 || input$ex_1_bern_p == 0){
+            ex_7_max$val <- 1
+            updateSliderInput(session, "ex_7_begin", min=0, max=0, value=0)
+          }
+          else{
+            ex_7_max$val <- 2
+            updateSliderInput(session, "ex_7_begin", min=0, max=1, value=0)
+          }
+        }
+        
+        if(tip == "binom"){
+          X <- RV(0:input$ex_1_binom_n, dbinom(0:input$ex_1_binom_n,input$ex_1_binom_n,input$ex_1_binom_p))
+          ex_7_max$val <- input$ex_1_binom_n + 1
+          updateSliderInput(session, "ex_7_begin", min=0, max=input$ex_1_binom_n, value=0)
+        }
+        
+        if(tip == "geom"){
+          X <- RV(0:input$ex_7_dim, dgeom(0:input$ex_7_dim, input$ex_1_geom_p))
+          observeEvent(input$ex_7_dim, {
+            if(input$ex_7_dim>length(outcomes(X))){ex_7_max$val <- length(outcomes(X))+1}else{ex_7_max$val <- input$ex_7_dim+1}
+            updateSliderInput(session, "ex_7_begin", min=0, max=ex_7_max$val-1, value=0)
+          })
+        }
+        
+        if(tip == "hgeom"){
+          X <- RV(0:input$ex_1_hgeom_k, dhyper(0:input$ex_1_hgeom_k,input$ex_1_hgeom_m,input$ex_1_hgeom_n,input$ex_1_hgeom_k)) 
+          if(input$ex_1_hgeom_k>length(outcomes(X))){ex_7_max$val <- length(outcomes(X))+1}else{ex_7_max$val <- input$ex_1_hgeom_k+1}
+          updateSliderInput(session, "ex_7_begin", min=0, max=ex_7_max$val-1, value=0)
+        }
+        
+        if(tip == "pois"){
+          X <- RV(0:input$ex_7_dim, dpois(0:input$ex_7_dim, input$ex_1_pois_l))
+          observeEvent(input$ex_7_dim, {
+            if(input$ex_7_dim>length(outcomes(X))){ex_7_max$val <- length(outcomes(X))+1}else{ex_7_max$val <- input$ex_7_dim+1}
+            updateSliderInput(session, "ex_7_begin", min=0, max=ex_7_max$val-1, value=0)
+          })
+        }
+        
+        if(startsWith(tip, "d")){
+          nr <- strtoi(substring(tip, 2))
+          X <- ex2_rvs$arr[[nr]]
+        }
+        
+        f <-  function(x) {eval(parse(text = input$functionInput))}
+        X <- f(X)
+        
+        Outcomes <-  outcomes(X)
+        Probabilities <-  probs(X)
+        df <- data.frame(Outcomes,Probabilities)
+        observeEvent(input$ex_7_begin,{
+          df <- tail(df,ex_7_max$val-input$ex_7_begin)
+          output$ex_7_tbl = renderDT(
+            df, options = list(pageLength=10)
+          )
         })
-        return()
-      }
-      else {
-        output$ex_7_txt <- renderText({
-          paste("")
-        })
-      }
-      
-      if(tip == "bern"){
-        p <- input$ex_1_bern_p
-        X <- RV(c(0,1), c(1-p, p))
-      }
-      
-      if(tip == "binom"){
-        X <- RV(0:input$ex_1_binom_n, dbinom(0:input$ex_1_binom_n,input$ex_1_binom_n,input$ex_1_binom_p)) 
-      }
-      
-      if(tip == "geom"){
-        X <- RV(0:input$ex_7_dim, dgeom(0:input$ex_7_dim, input$ex_1_geom_p))
-        observeEvent(input$ex_7_dim, {
-          ex_7_max$val <- input$ex_7_dim 
-          if(input$ex_7_dim>length(outcomes(X))){ma=length(outcomes(X))}else{ma=input$ex_7_dim}
-          updateSliderInput(session, "ex_7_begin", min=0, max=ma, value=0)
-        })
-      }
-      
-      if(tip == "hgeom"){
-        X <- RV(0:input$ex_1_hgeom_k, dhyper(0:input$ex_1_hgeom_k,input$ex_1_hgeom_m,input$ex_1_hgeom_n,input$ex_1_hgeom_k)) 
-      }
-      
-      if(tip == "pois"){
-        X <- RV(0:input$ex_7_dim, dpois(0:input$ex_7_dim, input$ex_1_pois_l))
-        observeEvent(input$ex_7_dim, {
-          ex_7_max$val <- input$ex_7_dim 
-          if(input$ex_7_dim>length(outcomes(X))){ma=length(outcomes(X))}else{ma=input$ex_7_dim}
-          updateSliderInput(session, "ex_7_begin", min=0, max=ma, value=0)
-        })
-      }
-      
-      if(startsWith(tip, "d")){
-        nr <- strtoi(substring(tip, 2))
-        X <- ex2_rvs$arr[[nr]]
-      }
-      
-      f <-  function(x) {eval(parse(text = input$functionInput))}
-      X <- f(X)
-      
-      Outcomes <-  outcomes(X)
-      Probabilities <-  probs(X)
-      df <- data.frame(Outcomes,Probabilities)
-      observeEvent(input$ex_7_begin,{
-        df <- tail(df,length(Outcomes)-input$ex_7_begin)
-        output$ex_7_tbl = renderDT(
-          df, options = list(pageLength=10)
-        )
       })
-    })
-    })
+    
     #########
     # Ex. 8 #
     #########
