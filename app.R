@@ -260,7 +260,7 @@ server <- function(input, output, session) {
           if(nr %in% X) return(P(X == nr))
           else return(0)
         })
-        plot(x, y, type='l')
+        plot(x, y)
     })
     
     output$ex_1_bern_plot2 <- renderPlot({
@@ -270,7 +270,7 @@ server <- function(input, output, session) {
       y <- sapply(x, function(nr) {
         return(P(X <= nr))
       })
-      plot(x, y, type='l')
+      plot(x, y)
     })
     
     output$ex_1_bern_txt <- renderText({
@@ -283,8 +283,8 @@ server <- function(input, output, session) {
       p <- input$ex_1_binom_p
       n <- input$ex_1_binom_n
       
-      x <- seq(0, n+2, 0.1)
-      plot(x, dbinom(x,n,p), type='l')
+      x <- seq(0, n+2)
+      plot(x, dbinom(x,n,p))
     })
     
     output$ex_1_binom_plot2 <- renderPlot({
@@ -292,7 +292,7 @@ server <- function(input, output, session) {
       n <- input$ex_1_binom_n
       
       x <- seq(0, n+2,0.001)
-      plot(x,pbinom(x,n,p), type='l')
+      plot(x,pbinom(x,n,p))
     })
     
     output$ex_1_binom_txt <- renderText({
@@ -304,14 +304,14 @@ server <- function(input, output, session) {
     # Geom
     output$ex_1_geom_plot1 <- renderPlot({
       p <- input$ex_1_geom_p
-      x <- seq(0, 6, 0.1)
-      plot(x, dgeom(x,p), type='l')
+      x <- seq(0, 6)
+      plot(x, dgeom(x,p))
     })
     
     output$ex_1_geom_plot2 <- renderPlot({
       p <- input$ex_1_geom_p
       x <- seq(0, 6,0.001)
-      plot(x,pgeom(x,p), type='l')
+      plot(x,pgeom(x,p))
     })
     
     output$ex_1_geom_txt <- renderText({
@@ -325,16 +325,16 @@ server <- function(input, output, session) {
       m <- input$ex_1_hgeom_m
       k <- input$ex_1_hgeom_k
       
-      x <- seq(0, k+1, 1)
-      plot(x, dhyper(x,m,n,k), type='l')
+      x <- seq(0, k+1)
+      plot(x, dhyper(x,m,n,k))
     })
     
     output$ex_1_hgeom_plot2 <- renderPlot({
       n <- input$ex_1_hgeom_n
       m <- input$ex_1_hgeom_m
       k <- input$ex_1_hgeom_k
-      x <- seq(0, k+1,0.001)
-      plot(x,phyper(x,m,n,k), type='l')
+      x <- seq(0, k+1, 0.001)
+      plot(x,phyper(x,m,n,k))
     })
     
     output$ex_1_hgeom_txt <- renderText({
@@ -348,14 +348,14 @@ server <- function(input, output, session) {
     # Pois
     output$ex_1_pois_plot1 <- renderPlot({
       l <- input$ex_1_pois_l
-      x <- seq(0, 6, 0.1)
-      plot(x, dpois(x,l), type='l')
+      x <- seq(0, 6)
+      plot(x, dpois(x,l))
     })
     
     output$ex_1_pois_plot2 <- renderPlot({
       l <- input$ex_1_pois_l
       x <- seq(0, 6,0.001)
-      plot(x,ppois(x,l), type='l')
+      plot(x,ppois(x,l))
     })
     
     output$ex_1_pois_txt <- renderText({
@@ -444,7 +444,7 @@ server <- function(input, output, session) {
           codomeniu <- sapply(domeniu, function(nr) {
             return(P(X<=nr))
           })
-          plot(domeniu, codomeniu, pch=19, type='l')
+          plot(domeniu, codomeniu, pch=19)
         })
         output[[sprintf("ex_1_#%d_text", a)]] <- renderText({
           X <- ex2_rvs$arr[[a]]
@@ -508,7 +508,7 @@ server <- function(input, output, session) {
           x * f(x)
         }, -Inf, Inf)$value
         
-        dispersia <- integrate(function(x){
+        media2 <- integrate(function(x){
           x * x * f(x)
         }, -Inf, Inf)$value
         
@@ -519,7 +519,7 @@ server <- function(input, output, session) {
           "Functia de repartitie",
           plotOutput(sprintf("ex_2_#%d_plot2", a), height = "290px"),
           paste("Media: ", media),
-          paste("Dispersia: ", dispersia)
+          paste("Dispersia: ", media * media - media2)
         )
       })
     })
