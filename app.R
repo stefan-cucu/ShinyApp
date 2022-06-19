@@ -11,15 +11,15 @@ ui <- dashboardPage(
   dashboardSidebar(
     sidebarMenu(
       menuItem("Ex. 1 - Galerie", tabName="ex1", icon = icon('th')),
-      menuItem("Ex. 2", tabName="ex2", icon = icon('th')),
-      menuItem("Ex. 3", tabName="ex3", icon = icon('th')),
-      menuItem("Ex. 5", tabName="ex5"),
-      menuItem("Ex. 6", tabName="ex6"),
-      menuItem("Ex. 7", tabName="ex7"),
-      menuItem("Ex. 8", tabName="ex8"),
-      menuItem("Ex. 9", tabName="ex9"),
-      menuItem("Ex. 11", tabName="ex11"),
-      menuItem("Ex. 12", tabName="ex12")
+      menuItem("Ex. 2", tabName="ex2", icon = icon('pencil')),
+      menuItem("Ex. 3", tabName="ex3", icon = icon('calculator')),
+      menuItem("Ex. 5", tabName="ex5", icon = icon('eye')),
+      menuItem("Ex. 6", tabName="ex6", icon = icon('less-than-equal')),
+      menuItem("Ex. 7", tabName="ex7", icon = icon('filter')),
+      menuItem("Ex. 8", tabName="ex8", icon = icon('equals')),
+      menuItem("Ex. 9", tabName="ex9", icon = icon('table')),
+      menuItem("Ex. 11", tabName="ex11", icon = icon('chart-bar')),
+      menuItem("Ex. 12", tabName="ex12", icon = icon('plus'))
     )
   ),
   dashboardBody(
