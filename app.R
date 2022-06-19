@@ -816,7 +816,7 @@ server <- function(input, output, session) {
         return(x)
       }
       
-      if(between(integrate(f, input$ex_2_cstart, input$ex_2_cend)$value, 0.995, 1.005) == FALSE){
+      if(between(integrate(f, input$ex_2_cstart, input$ex_2_cend)$value,  0.98, 1.02) == FALSE){
         output$proprietatic2 <- renderText({
           paste("Functie gresita!")
         })
@@ -1560,18 +1560,18 @@ server <- function(input, output, session) {
             x[!check] <- 0
             return(x)
           }
-          if(between(integrate(f, input$ex_2_cstart, input$ex_2_cend)$value, 0.995, 1.005) == FALSE){
+          if(between(integrate(function(x){g(f(x))}, input$ex_2_cstart, input$ex_2_cend)$value, 0.98, 1.02) == FALSE){
             output$ex_8_med_disp <- renderText({
               paste("Functie gresita!")
             })
             return()
           }
           media <- integrate(function(x){
-            x * g(f(x))
+            x * (g(f(x)))
           }, -Inf, Inf)$value
     
           media2 <- integrate(function(x){
-            x * x * g(f(x))
+            x * x * (g(f(x)))
           }, -Inf, Inf)$value
           print(paste("Media este: ",media," Dispersia este: ",media2))
           output$ex_8_med_disp <- renderText(
