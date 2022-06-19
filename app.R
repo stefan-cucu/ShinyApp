@@ -1543,7 +1543,7 @@ server <- function(input, output, session) {
             if(length(poz) == 1) {
               dif <- TRUE
               
-              mat[poz, j] <- ifelse(poz == nrcol,
+              mat[poz, j] <- ifelse(poz == nrlin,
                                     sum(mat[,j], na.rm = TRUE),
                                     mat[nrlin,j] - sum(mat[1:(nrlin-1),j], na.rm = TRUE))
             }
