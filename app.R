@@ -4,6 +4,7 @@ library(discreteRV)
 library(DT)
 library(dplyr)
 library(rlist)
+library(readxl)
 
 # Define UI for application
 ui <- dashboardPage(
@@ -234,8 +235,7 @@ ui <- dashboardPage(
           textInput(inputId = "ex8_functionInput", "Function"),
           uiOutput("ex_8_shownum"),
           actionButton('ex_8_eval', "Evaluate"),
-          textOutput("ex_8_med"),
-          textOutput("ex_8_disp")
+          textOutput("ex_8_med_disp"),
         )
       ),
       tabItem(
@@ -816,7 +816,7 @@ server <- function(input, output, session) {
         return(x)
       }
       
-      if(between(integrate(f, input$ex_2_cstart-1, input$ex_2_cend)$value, 0.95, 1.05) == FALSE){
+      if(between(integrate(f, input$ex_2_cstart, input$ex_2_cend)$value, 0.995, 1.005) == FALSE){
         output$proprietatic2 <- renderText({
           paste("Functie gresita!")
         })
@@ -847,11 +847,11 @@ server <- function(input, output, session) {
         media <- integrate(function(x){
           x * f(x)
         }, -Inf, Inf)$value
-        dispersia <- integrate(function(x){
+        media2 <- integrate(function(x){
           x * x * f(x)
         }, -Inf, Inf)$value
         paste("Media repartitiei este: ", media,
-              "\nDispersia repartitiei este: ", dispersia)
+              "\nDispersia repartitiei este: ", media*media-media2)
       })
       
       ex2_fcts$cnt <- ex2_fcts$cnt + 1
@@ -1454,18 +1454,130 @@ server <- function(input, output, session) {
     #########
     observeEvent(input$va_selected, {
       tip <- input$va_selected
+      if (tip == "bern") {
+        observeEvent(input$ex_8_eval, {
+          f = function(x) {eval(parse(text = input$ex8_functionInput))}
+          p <- input$ex_1_bern_p
+          output$ex_8_med_disp <- renderText(
+            {paste("Media este: ",f(p)," Dispersia este: ",f(p*(1-p)))}
+          )
+        })
+      }
+      if (tip == "binom") {
+        observeEvent(input$ex_8_eval, {
+          f = function(x) {eval(parse(text = input$ex8_functionInput))}
+          p <- input$ex_1_binom_p
+          n <- input$ex_1_binom_n
+          output$ex_8_med_disp <- renderText(
+            {paste("Media este: ",f(p*n)," Dispersia este: ", f(n * p * (1 - p)))}
+          )
+        })
+      }
+      if (tip == "geom") {
+        observeEvent(input$ex_8_eval, {
+          f = function(x) {eval(parse(text = input$ex8_functionInput))}
+          p <- input$ex_1_geom_p
+          output$ex_8_med_disp <- renderText(
+            {paste("Media este: ",f((1-p)/p)," Dispersia este: ", f((1 - p) / (p ^ 2)))}
+          )
+        })
+      }
+      if (tip == "hgeom") {
+        observeEvent(input$ex_8_eval, {
+          f = function(x) {eval(parse(text = input$ex8_functionInput))}
+          n <- input$ex_1_hgeom_n
+          m <- input$ex_1_hgeom_m
+          k <- input$ex_1_hgeom_k
+          p <- m / (m + n)
+          output$ex_8_med_disp <- renderText(
+            {paste("Media este: ",f(k*p)," Dispersia este: ", f(k * p * (1 - p) * (m + n - k) / (m + n - 1)))}
+          )
+        })
+      }
+      if (tip == "pois") {
+        observeEvent(input$ex_8_eval, {
+          f = function(x) {eval(parse(text = input$ex8_functionInput))}
+          l <- input$ex_1_pois_l
+          output$ex_8_med_disp <- renderText(
+            {paste("Media este: ",f(l)," Dispersia este: ", f(l))}
+          )
+        })
+      }
+      if (tip == "unif") {
+        observeEvent(input$ex_8_eval, {
+          f = function(x) {eval(parse(text = input$ex8_functionInput))}
+          a <- input$ex_1_unif_a
+          b <- input$ex_1_unif_b
+          output$ex_8_med_disp <- renderText(
+            {paste("Media este: ",f(0.5 * (a + b))," Dispersia este: ", f(((b - a) ^ 2) / 12))}
+          )
+        })
+      }
+      if (tip == "exp") {
+        observeEvent(input$ex_8_eval, {
+          f = function(x) {eval(parse(text = input$ex8_functionInput))}
+          l <- input$ex_1_exp_l
+          output$ex_8_med_disp <- renderText(
+            {paste("Media este: ",f(1 / l)," Dispersia este: ", f(1 / (l ^ 2)))}
+          )
+        })
+      }
       if (tip == "norm") {
         observeEvent(input$ex_8_eval, {
           f = function(x) {eval(parse(text = input$ex8_functionInput))}
-          output$ex_8_med <- renderText(
-            {paste("Media este: ",f(input$ex_1_norm_m))}
+          output$ex_8_med_disp <- renderText(
+            {paste("Media este: ",f(input$ex_1_norm_m)," Dispersia este: ",f((input$ex_1_norm_d)^2))}
           )
-          output$ex_8_disp <-
-            renderText(
-              {paste("Dispersia este: ",f(input$ex_1_norm_d))}
-            )
         })
-        
+      }
+      if(startsWith(tip, "d")) {
+        observeEvent(input$ex_8_eval, {
+          f = function(x) {eval(parse(text = input$ex8_functionInput))}
+          nr <- strtoi(substring(tip, 2))
+          X <- ex2_rvs$arr[[nr]]
+          output$ex_8_med_disp <- renderText(
+            {paste("Media este: ",E(f(X))," Dispersia este: ",V(f(X)))}
+          )
+        })
+      }
+      if(startsWith(tip, "c")) {
+        observeEvent(input$ex_8_eval, {
+          g  <-  function(x) {eval(parse(text = input$ex8_functionInput))}
+          nr <- strtoi(substring(tip, 2))
+          cstart <- ex2_fcts$arr[[nr]][[2]]
+          cend <- ex2_fcts$arr[[nr]][[3]]
+          func_string <- ex2_fcts$arr[[nr]][[1]]
+          f <-  function(x) {
+            check <- mapply(function(val){
+              if(val < cstart)
+                return(FALSE)
+              else if(val > cend){
+                return(FALSE)
+              }
+              else return(TRUE)
+            }, x)
+            x <- eval(parse(text=func_string))
+            x[!check] <- 0
+            return(x)
+          }
+          if(between(integrate(f, input$ex_2_cstart, input$ex_2_cend)$value, 0.995, 1.005) == FALSE){
+            output$ex_8_med_disp <- renderText({
+              paste("Functie gresita!")
+            })
+            return()
+          }
+          media <- integrate(function(x){
+            x * g(f(x))
+          }, -Inf, Inf)$value
+    
+          media2 <- integrate(function(x){
+            x * x * g(f(x))
+          }, -Inf, Inf)$value
+          print(paste("Media este: ",media," Dispersia este: ",media2))
+          output$ex_8_med_disp <- renderText(
+            {paste("Media este: ",media," Dispersia este: ",media * media - media2)}
+          )
+        })
       }
     })
     #########
