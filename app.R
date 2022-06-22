@@ -1549,16 +1549,16 @@ server <- function(input, output, session) {
           cend <- ex2_fcts$arr[[nr]][[3]]
           func_string <- ex2_fcts$arr[[nr]][[1]]
           g  <-  function(x) {
-            check <- mapply(function(val){
-              if(val < cstart)
-                return(FALSE)
-              else if(val > cend){
-                return(FALSE)
-              }
-              else return(TRUE)
-            }, x)
+            # check <- mapply(function(val){
+            #   if(val < cstart)
+            #     return(FALSE)
+            #   else if(val > cend){
+            #     return(FALSE)
+            #   }
+            #   else return(TRUE)
+            # }, x)
             x<-eval(parse(text = input$ex8_functionInput))
-            x[!check] <- 0
+            # x[!check] <- 0
             return(x)
           }
           f <-  function(x) {
