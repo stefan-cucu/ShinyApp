@@ -852,7 +852,7 @@ server <- function(input, output, session) {
           x * x * f(x)
         }, -Inf, Inf)$value
         paste("Media repartitiei este: ", media,
-              "\nDispersia repartitiei este: ", media*media-media2)
+              "\nDispersia repartitiei este: ", media2 - media * media)
       })
       
       ex2_fcts$cnt <- ex2_fcts$cnt + 1
