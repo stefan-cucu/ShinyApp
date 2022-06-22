@@ -1046,7 +1046,7 @@ server <- function(input, output, session) {
       }
       if(startsWith(tip, "d")){
         nr <- strtoi(substring(tip, 2))
-        ex_5_max$val <- length(probs(ex2_rvs$arr[[nr]]))s
+        ex_5_max$val <- length(probs(ex2_rvs$arr[[nr]]))
         updateSliderInput(session, "ex_5_begin", min=0, max=ex_5_max$val, value=0)
       }
       if(tip == "geom" || tip == "pois"){
