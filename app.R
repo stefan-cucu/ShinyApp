@@ -662,7 +662,7 @@ server <- function(input, output, session) {
           "Functia de repartitie",
           plotOutput(sprintf("ex_2_#%d_plot2", a), height = "290px"),
           paste("Media: ", media),
-          paste("Dispersia: ", media * media - media2)
+          paste("Dispersia: ", media2 - media * media)
         )
       })
     })
@@ -1046,7 +1046,7 @@ server <- function(input, output, session) {
       }
       if(startsWith(tip, "d")){
         nr <- strtoi(substring(tip, 2))
-        ex_5_max$val <- length(probs(ex2_rvs$arr[[nr]]))
+        ex_5_max$val <- length(probs(ex2_rvs$arr[[nr]]))s
         updateSliderInput(session, "ex_5_begin", min=0, max=ex_5_max$val, value=0)
       }
       if(tip == "geom" || tip == "pois"){
@@ -1588,7 +1588,7 @@ server <- function(input, output, session) {
             x * x * (g(f(x)))
           }, cstart, cend)$value
           output$ex_8_med_disp <- renderText(
-            {paste("Media este: ",media," Dispersia este: ",media * media - media2)}
+            {paste("Media este: ",media," Dispersia este: ",media2 - media * media)}
           )
         })
       }
